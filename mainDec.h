@@ -1,0 +1,17 @@
+int enableColor(void);
+int printOpeningAndGetNum(void);
+void printText(int num);
+void getRowAndColumnNum(int *numRow, int *numColumn);
+void positiveIntVerify(int *input, int *arr, int arrLen);
+void doubleVerify(int numColumn, int numRow, double *matrix, char *str);
+void arrayCopy(int numRow, int numColumn, double *srcMatrix, double *destMatrix);
+void displayMatrix(int numColumn, int numRow, double *matrix);
+void displaySolution(int size, double *solution);
+void setIdentityMatrix(int numRow, int numColumn, double *matrix);
+int negativeZerosAndFindRank(int numColumn, int numRow, double *matrix);
+double deterCalc(int n, double *originMatrix);
+void findAndPrintAdjoint(int n, double *matrix);
+void GaussJordanAndFindInverse(int numRow, int numColumn, double *echelonFormMatrix, double *inverseMatrix);
+double* separateColumn(int numRow, int numColumn, int column, double *matrix, double *arrColumn);
+int CramersRule(int size, double *solution, double *scalarMatrix, double *bColumn);
+double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double *matrix1, double *matrix2);
