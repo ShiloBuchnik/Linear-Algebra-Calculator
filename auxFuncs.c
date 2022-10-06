@@ -171,19 +171,6 @@ void switchRows(int numColumn, int row1, int row2, double *matrix)
    for (int j = 0; j < numColumn; j++) swap(matrix + row1*numColumn + j, matrix + row2*numColumn + j);
 }
 
-/* When passing a 1D array to a function, we don't need to tell the function the size of the array.
-
-BUT, when we pass a 2D array, we need to tell the function the columns' size.
-Say you pass 10 memory blocks to the function, how is the compiler supposed to know if it's 2 arrays of 5, or 5 arrays of 2?
-And it must be the column' size that we're passing,
-so it will know how many elements are in every sub-array and could preform pointer arithmetic.
-
-In general, when we pass an n-D array, we need to specify n-1 dimensions of it.
-
-Also, worth noting is that when we DECLARE an array, the [] operator simply indicates the size.
-In declaring it doesn't come in the dereferencing context. */
-
-
 /* This function takes a matrix and separate a column (listed as 'column') from it.
 It returns a pointer to a new matrix without that column, and it stores that column in 'arrColumn' */
 double* separateColumn(int numRow, int numColumn, int column, double *matrix, double *arrColumn)
@@ -238,25 +225,26 @@ int printOpeningAndGetNum(void)
 }
 
 // Printing instructions for user's choice of mode
+// Did you know? Separating strings in 'printf' with whitespace - concatenate them
 void printText(int num)
 {
    if (num == 1)
    {
-      printf("In this program you input a \x1b[96mmatrix\x1b[0m\n");
-      printf("The output is the \x1b[92mreduced row echelon form\x1b[0m,\n");
-      printf("as well as the \x1b[93mrank\x1b[0m, the \x1b[94minverse matrix\x1b[0m, the \x1b[91mdeterminant\x1b[0m and the \x1b[95madjoint matrix\x1b[0m\n");
-      printf("Please input each row as a string of numbers, with spaces between them. For example: 0.3 1/2 5 8 23");
+      printf("In this program you input a \x1b[96mmatrix\x1b[0m\n"
+             "The output is the \x1b[92mreduced row echelon form\x1b[0m,\n"
+             "as well as the \x1b[93mrank\x1b[0m, the \x1b[94minverse matrix\x1b[0m, the \x1b[91mdeterminant\x1b[0m and the \x1b[95madjoint matrix\x1b[0m\n"
+             "Please input each row as a string of numbers, with spaces between them. For example: 0.3 1/2 5 8 23");
    }
    else if (num == 2)
    {
-      printf("In this program you input, for each equation, the \x1b[96mscalars\x1b[0m of its variables by order\n");
-      printf("So, for example, for equation #1, '2x+3y=1', the input should be '2 3 1'\n");
-      printf("The output is \x1b[92msolution vector\x1b[0m for the set of equations");
+      printf("In this program you input, for each equation, the \x1b[96mscalars\x1b[0m of its variables by order\n"
+             "So, for example, for equation #1, '2x+3y=1', the input should be '2 3 1'\n"
+             "The output is \x1b[92msolution vector\x1b[0m for the set of equations");
    }
    else
    {
-      printf("In this program you input two matrices: \x1b[91mmatrix 1\x1b[0m and \x1b[94mmatrix 2\x1b[0m\n");
-      printf("The output is the \x1b[92mproduct\x1b[0m: \x1b[91mmatrix 1\x1b[0m * \x1b[94mmatrix 2\x1b[0m");
+      printf("In this program you input two matrices: \x1b[91mmatrix 1\x1b[0m and \x1b[94mmatrix 2\x1b[0m\n"
+             "The output is the \x1b[92mproduct\x1b[0m: \x1b[91mmatrix 1\x1b[0m * \x1b[94mmatrix 2\x1b[0m");
    }
 
     printf("\n\nThings to take heed of:\n"

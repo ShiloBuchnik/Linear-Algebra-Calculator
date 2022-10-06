@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "mainDec.h"
 
-// Tip: *(matrix + i*numColumn + j) == matrix[i][j]
-
 int main()
 {
    enableColor();

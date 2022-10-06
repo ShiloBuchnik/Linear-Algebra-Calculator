@@ -141,22 +141,6 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, d
 
                   if (fabs(*(inputMatrix + k*numColumn + p)) < 1E-10) *(inputMatrix + k*numColumn + p) = 0;
                   if (inverseMatrix != NULL) if (fabs(*(inverseMatrix + k*numColumn + p)) < 1E-10) *(inverseMatrix + k*numColumn + p) = 0;
-                  /* The computer doesn't store some real numbers accurately, because it counts in binary sums; i.e. 1/2+1/4+1/8 and so on.
-                  Those sums are exactly like when we want to write 0.045 in base 10, we write 4*10^-2+5*10^3.
-                  In so, some real numbers have infinite digits after the dot in binary, and therefore would require an infinite sum.
-                  Because the computer can't count infinitely, it rounds after 15 digits.
-
-                  Think about base 10 - only fractions that have solely prime factors of 10 in the denominator have finite amount of digits after the dot.
-                  So 1/2, 1/5, 1/16 and 1/25 are finite; but 1/3, 1/7 and 1/12 are not.
-
-                  Same goes for base 2, only fractions that have a power of 2 on their denominator are finite.
-                  So 1/2, 1/4, 1/8 and so on; while 1/3, 1/5 and 1/6 are not.
-
-                  So, the point is, if we enter 0.1 and 0.2, they'll get rounded;
-                  and if we'll want to subtract them we'll get 0.2-0.1 = 1.0000000000000001.
-
-                  In so, when we subtract x from x, we won't always get 0, but an epsilon.
-                  Since we NEED this value to be exactly 0, we do this check */
                }
             }
             z++;
