@@ -1,4 +1,6 @@
-void displayMatrix(int numColumn, int numRow, double *matrix);
-void switchColumns(int numRow, int numColumn, int column, double *matrix, double *arrColumn);
-void switchRows(int numColumn, int row1, int row2, double *matrix);
-double vectorMultiplier(int column1, int column2, double *vector1, double *vector2);
+int negativeZerosAndFindRank(int numRow, int numColumn, double *matrix);
+double deterCalc(int n, double *originMatrix);
+void findAndPrintAdjoint(int n, double *matrix);
+int CramersRule(int size, double *solution, double *scalarMatrix, double *bColumn);
+void GaussJordanAndFindInverse(int numRow, int numColumn, double *echelonFormMatrix, double *inverseMatrix, double *permutation);
+double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double *matrix1, double *matrix2);
