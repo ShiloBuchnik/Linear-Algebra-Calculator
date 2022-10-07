@@ -11,7 +11,7 @@ int negativeZerosAndFindRank(int numColumn, int numRow, double *matrix)
    {
       for (int j = 0; j < numColumn; j++)
       {
-         if (*(matrix + i*numColumn + j) == 0) *(matrix + i*numColumn + j) = fabs(*(matrix + i*numColumn + j));
+         if (*(matrix + i*numColumn + j) == 0.0) *(matrix + i*numColumn + j) = 0.0;
          else flag = 1;
       }
       if (flag) nonZeroRows++;
@@ -109,64 +109,65 @@ int CramersRule(int size, double *solution, double *scalarMatrix, double *bColum
 
 /* 'input' is passed to perform elimination on, and an identity matrix is passed as 'inverse'
 Through elimination, as 'input' gets echelon form, 'inverse' becomes the inverse matrix (if 'input' is invertible)
-If we don't want to find the inverse, we pass NULL */
+If we don't want to find the inverse, we pass NULL
+*Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
 void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, double *inverseMatrix)
 {
+   /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
+   'k' (row) and 'p' (column) are used to subtract the entire pivot's row from all the rows below it */
    int i = 0, j = 0, k = 0, p = 0, z = 0;
-   double scalar;
+   double pivot, scalar;
 
-   for (j = 0; j < numColumn; j++) // For the bottom triangle of the matrix
+   for (j = 0; j < numColumn; j++) // For the bottom triangle of the matrix. After this, the matrix is in echelon form
    {
       for (i = z; i < numRow; i++)
       {
-         if (*(inputMatrix + i*numColumn + j) != 0)
+         if (*(inputMatrix + i*numColumn + j) == 0) continue; // Searching for a non-zero pivot in the given column
+
+         switchRows(numColumn, i, z, inputMatrix);
+         if (inverseMatrix != NULL) switchRows(numColumn, i, z, inverseMatrix);
+
+         pivot = *(inputMatrix + z * numColumn + j);
+         for (k = 0; k < numColumn; k++) // Dividing the row by leading entry (pivot)
          {
-            switchRows(numColumn, i, z, inputMatrix);
-            if (inverseMatrix != NULL) switchRows(numColumn, i, z, inverseMatrix);
-
-            scalar = *(inputMatrix + z*numColumn + j);
-            for (k = 0; k < numColumn; k++) // Dividing the row by leading entry
-            {
-               *(inputMatrix + z*numColumn + k) /= scalar;
-               if (inverseMatrix != NULL) *(inverseMatrix + z*numColumn + k) /= scalar;
-            }
-
-            for (k = z + 1; k < numRow; k++) // Subtracting z row from rows below
-            {
-               scalar = *(inputMatrix + k*numColumn + j);
-               for (p = 0; p < numColumn; p++)
-               {
-                  *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + z*numColumn + p);
-                  if (inverseMatrix != NULL) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + z*numColumn + p);
-
-                  if (fabs(*(inputMatrix + k*numColumn + p)) < 1E-10) *(inputMatrix + k*numColumn + p) = 0;
-                  if (inverseMatrix != NULL) if (fabs(*(inverseMatrix + k*numColumn + p)) < 1E-10) *(inverseMatrix + k*numColumn + p) = 0;
-               }
-            }
-            z++;
-            break;
+            *(inputMatrix + z*numColumn + k) /= pivot;
+            if (inverseMatrix != NULL) *(inverseMatrix + z*numColumn + k) /= pivot;
          }
+
+         for (k = z + 1; k < numRow; k++) // Subtracting pivot's row ('z's row) from the rows below it
+         {
+            scalar = *(inputMatrix + k * numColumn + j);
+            for (p = 0; p < numColumn; p++)
+            {
+               *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + z * numColumn + p);
+               if (inverseMatrix != NULL) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + z * numColumn + p);
+
+               if (fabs(*(inputMatrix + k*numColumn + p)) < 1E-10) *(inputMatrix + k*numColumn + p) = 0; // Handling rounding errors
+               if (inverseMatrix != NULL) if (fabs(*(inverseMatrix + k*numColumn + p)) < 1E-10) *(inverseMatrix + k*numColumn + p) = 0;
+            }
+         }
+         z++;
+         break; // We've zeroed all elements below pivot, and we're done with this column
       }
    }
 
 
-   for (i = numRow - 1; i >= 0; i--) // For the upper triangle of the matrix
+   for (i = numRow - 1; i >= 0; i--) // For the upper triangle of the matrix. After this, the matrix is in *reduced* echelon form
    {
       for (j = 0; j < numColumn; j++)
       {
-         if (*(inputMatrix + i*numColumn + j) != 0)
-         {
-            for (k = i - 1; k >= 0; k--) // Subtracting i row from rows above
+         if (*(inputMatrix + i*numColumn + j) == 0) continue; // Searching for the leading element in the row
+
+         for (k = i - 1; k >= 0; k--) // Subtracting pivot's row ('i's row) from rows above
+            {
+               scalar = *(inputMatrix + k * numColumn + j);
+               for (p = 0; p < numColumn; p++)
                {
-                  scalar = *(inputMatrix + k*numColumn + j);
-                  for (p = 0; p < numColumn; p++)
-                  {
-                     *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + i*numColumn + p);
-                     if (inverseMatrix != NULL) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + i*numColumn + p);
-                  }
+                  *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + i * numColumn + p);
+                  if (inverseMatrix != NULL) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + i * numColumn + p);
                }
-            break;
-         }
+            }
+         break;
       }
    }
 }

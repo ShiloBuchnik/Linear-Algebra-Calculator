@@ -166,6 +166,7 @@ void switchColumns(int numRow, int numColumn, int column, double *matrix, double
    for (int i = 0; i < numRow; i++) swap(matrix + i*numColumn + column, arrColumn + i);
 }
 
+// This function swaps between two rows in a matrix
 void switchRows(int numColumn, int row1, int row2, double *matrix)
 {
    for (int j = 0; j < numColumn; j++) swap(matrix + row1*numColumn + j, matrix + row2*numColumn + j);
@@ -225,26 +226,22 @@ int printOpeningAndGetNum(void)
 }
 
 // Printing instructions for user's choice of mode
-// Did you know? Separating strings in 'printf' with whitespace - concatenate them
+// Did you know? Separating strings in 'printf' with whitespace - concatenates them
 void printText(int num)
 {
-   if (num == 1)
-   {
-      printf("In this program you input a \x1b[96mmatrix\x1b[0m\n"
-             "The output is the \x1b[92mreduced row echelon form\x1b[0m,\n"
-             "as well as the \x1b[93mrank\x1b[0m, the \x1b[94minverse matrix\x1b[0m, the \x1b[91mdeterminant\x1b[0m and the \x1b[95madjoint matrix\x1b[0m\n"
-             "Please input each row as a string of numbers, with spaces between them. For example: 0.3 1/2 5 8 23");
-   }
-   else if (num == 2)
-   {
-      printf("In this program you input, for each equation, the \x1b[96mscalars\x1b[0m of its variables by order\n"
-             "So, for example, for equation #1, '2x+3y=1', the input should be '2 3 1'\n"
-             "The output is \x1b[92msolution vector\x1b[0m for the set of equations");
-   }
-   else
-   {
-      printf("In this program you input two matrices: \x1b[91mmatrix 1\x1b[0m and \x1b[94mmatrix 2\x1b[0m\n"
-             "The output is the \x1b[92mproduct\x1b[0m: \x1b[91mmatrix 1\x1b[0m * \x1b[94mmatrix 2\x1b[0m");
+   switch (num) {
+       case 1:
+           printf("In this program you input a \x1b[96mmatrix\x1b[0m\n"
+                  "The output is the \x1b[92mreduced row echelon form\x1b[0m,\n"
+                  "as well as the \x1b[93mrank\x1b[0m, the \x1b[94minverse matrix\x1b[0m, the \x1b[91mdeterminant\x1b[0m and the \x1b[95madjoint matrix\x1b[0m\n"
+                  "Please input each row as a string of numbers, with spaces between them. For example: 0.3 1/2 5 8 23");
+       case 2:
+           printf("In this program you input, for each equation, the \x1b[96mscalars\x1b[0m of its variables by order\n"
+                  "So, for example, for equation #1, '2x+3y=1', the input should be '2 3 1'\n"
+                  "The output is \x1b[92msolution vector\x1b[0m for the set of equations");
+       case 3:
+           printf("In this program you input two matrices: \x1b[91mmatrix 1\x1b[0m and \x1b[94mmatrix 2\x1b[0m\n"
+                  "The output is the \x1b[92mproduct\x1b[0m: \x1b[91mmatrix 1\x1b[0m * \x1b[94mmatrix 2\x1b[0m");
    }
 
     printf("\n\nThings to take heed of:\n"
