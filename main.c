@@ -28,23 +28,29 @@ int main()
 
 
         double *inverseMatrix = NULL;
-        if (isSquare) inverseMatrix = (double *) malloc(numRow * numColumn * sizeof(double));
-        setIdentityMatrix(numRow, inverseMatrix); // We set it to identity matrix, and in the end of the process get the inverse
+        if (isSquare)
+        {
+            inverseMatrix = (double *) malloc(numRow * numColumn * sizeof(double));
+            setIdentityMatrix(numRow, inverseMatrix); // We set it to identity matrix, and in the end of the process get the inverse
+        }
 
         double *permutationMatrix = (double *) malloc(numRow * numRow * sizeof(double));
         setIdentityMatrix(numRow, permutationMatrix); // We set it to identity matrix, and in the end of the process get the permutation
+        int isPermutationIdentity = 1;
         double *L = (double *) malloc(numRow * numRow * sizeof(double));
         setIdentityMatrix(numRow, L);
         double *U = (double *) malloc(numRow * numColumn * sizeof(double));
 
-        double *copy = (double *) malloc(numRow * numColumn * sizeof(double));
-        arrayCopy(numRow, numColumn, inputMatrix, copy);
-
-
         printf("Your \x1b[96mmatrix\x1b[0m is:\n");
         displayMatrix(numColumn, numRow, inputMatrix);
 
-        GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, NULL, NULL);
+        GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
+
+        double *inputMatrixCopy = (double *) malloc(numRow * numColumn * sizeof(double));
+        arrayCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
+        LUDecomposition(numRow, numColumn, inputMatrixCopy, permutationMatrix, L, U);
+        free(inputMatrixCopy);
+
 
         rank = negativeZerosAndFindRank(numRow, numColumn, echelonFormMatrix);
         negativeZerosAndFindRank(numRow, numColumn, inverseMatrix);
@@ -58,7 +64,7 @@ int main()
         {
             deter = deterCalc(numColumn, inputMatrix);
 
-            if (deter != 0) // If deter != 0, then the matrix has an inverse
+            if (!areEqual(deter, 0.0)) // If deter != 0, then the matrix has an inverse
             {
                 printf("The \x1b[94minverse matrix\x1b[0m is:\n");
                 displayMatrix(numColumn, numRow, inverseMatrix);
@@ -74,9 +80,24 @@ int main()
             printf("Non-square matrices don't have an \x1b[94minverse matrix\x1b[0m, "
             "nor a \x1b[91mdeterminant\x1b[0m, nor an \x1b[95madjoint\x1b[0m\n\n");
 
+
+        printf("The LU decomposition is:\n");
+        printf("L:\n");
+        displayMatrix(numRow, numRow, L);
+        printf("U:\n");
+        displayMatrix(numColumn, numRow, U);
+        printf("With a permutation:\n");
+        displayMatrix(numRow, numRow, permutationMatrix);
+        if (isSquare && !areEqual(deter, 0.0) && isPermutationIdentity)
+            printf("This matrix is regular (square, invertible, and has an LU decomposition without a permutation)");
+
+
         free(inputMatrix);
         free(echelonFormMatrix);
         free(inverseMatrix);
+        free(permutationMatrix);
+        free(L);
+        free(U);
         break;
     }
 

@@ -1,4 +1,5 @@
 int enableColor(void);
+int areEqual(double a, double b);
 void positiveIntVerify(int *input, int *arr, int arrLen);
 void doubleVerify(int numColumn, int numRow, double *matrix, char *str);
 void getRowAndColumnNum(int *numRow, int *numColumn);

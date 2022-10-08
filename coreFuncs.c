@@ -43,7 +43,8 @@ static void getMinor(int n, int rowValue, int columnValue, double *originMatrix,
 }
 
 /* Calculating determinant recursively, input array is 2d (a matrix), 'n' is number of columns
-Yes, I know we can multiply the numbers on the diagonal of an echelon form matrix, but isn't recursion fun? */
+Yes, I know we can multiply the numbers on the diagonal of an echelon form matrix, or compute it with the LU decomposition,
+but isn't recursion fun? */
 double deterCalc(int n, double *originMatrix)
 {
     if (n == 1) return *(originMatrix); // Base case, Det(a) = a
@@ -109,8 +110,9 @@ int CramersRule(int size, double *solution, double *scalarMatrix, double *bColum
     return 1; // A single solution found
 }
 
-
-static void rowOrColumnMultiplier(double *start, double *end, double scalar, int numColumn, char row_or_column){
+/* This function multiplies a row or column, in a 1D matrix, by a scalar
+We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c'). Based on that we know what arithmetic needs to be done */
+static void rowOrColumnMultiply(double *start, double *end, double scalar, int numColumn, char row_or_column){
     int interval = (row_or_column == 'r' ? 1 : numColumn);
 
     while (start != end)
@@ -130,7 +132,7 @@ BUT, this function does GaussJordan Elimination (*reduced* echelon form), so we 
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
 void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, double *inverseMatrix,
-                               double *permutation, double *L, double *U)
+                               double *permutation, int *isPermutationIdentity,  double *L, double *U)
 {
     /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
     'k' (row) and 'p' (column) are used to subtract the entire pivot's row from all the rows below it */
@@ -149,29 +151,25 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, d
                 if (inverseMatrix) switchRows(numColumn, i, z, inverseMatrix);
 
                 if (permutation) switchRows(numColumn, i, z, permutation); // We need to "write" the switch in the permutation
+                if (isPermutationIdentity) *isPermutationIdentity = 0;
             }
 
             pivot = *(inputMatrix + z * numColumn + j);
-            if (L) *(L + z * numRow + j) *= pivot;
-            /*for (k = z; k < numColumn; k++)
-            {
-                *(inputMatrix + z*numColumn + k) /= pivot;
-                if (inverseMatrix) *(inverseMatrix + z*numColumn + k) /= pivot;
-            }*/
+            if (L) *(L + z * numRow + z) *= pivot;
+            rowOrColumnMultiply(inputMatrix + z*numColumn + z, inputMatrix + z*numColumn + numColumn, 1 / pivot, numColumn, 'r');
             // Dividing the row by leading entry (pivot)
-            rowOrColumnMultiplier(inputMatrix + z*numColumn + z, inputMatrix + z*numColumn + numColumn, 1 / pivot, numColumn, 'r');
 
             for (k = z + 1; k < numRow; k++) // Subtracting pivot's row ('z's row) from the rows below it
             {
                 scalar = *(inputMatrix + k * numColumn + j);
-                if (L) *(L + k * numRow + j) = scalar;
+                if (L) *(L + k * numRow + z) = scalar;
                 for (p = z; p < numColumn; p++)
                 {
                    *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + z * numColumn + p);
                    if (inverseMatrix) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + z * numColumn + p);
 
-                   if (fabs(*(inputMatrix + k*numColumn + p)) < 1E-10) *(inputMatrix + k*numColumn + p) = 0; // Handling rounding errors
-                   if (inverseMatrix && fabs(*(inverseMatrix + k*numColumn + p)) < 1E-10) *(inverseMatrix + k*numColumn + p) = 0;
+                   if (areEqual(*(inputMatrix + k*numColumn + p), 0.0)) *(inputMatrix + k*numColumn + p) = 0; // Handling rounding errors
+                   if (inverseMatrix && areEqual(*(inputMatrix + k*numColumn + p), 0.0)) *(inverseMatrix + k*numColumn + p) = 0;
                 }
             }
             z++;
@@ -229,20 +227,17 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double *ma
 }
 
 void LUDecomposition(int numRow, int numColumn, double *inputMatrix, double *Permutation, double *L, double *U){
-    inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix); // Remember to deallocate og inputmatrix copy
-    GaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, L, U);
+    inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
+    GaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, NULL, L, U);
+    free(inputMatrix);
 
     // Running on the 'L' matrix
-    for (int j = 0; j < numRow; j++){ // L is square, ergo we use 'numRow', not 'numColumn'
-        if (fabs(*(L + j*numRow + j) - 1) < 1E-10) continue; // Optimization: if the diagonal element is 1, we're moving on to the next one. Switch to macro?
-        for (int i = j; i < numRow; i++){
+    for (int j = 0; j < numRow; j++) // L is square, ergo we run up to 'numRow', not 'numColumn'
+    {
+        if (areEqual(*(L + j*numRow + j), 1.0)) continue;// Optimization: if the diagonal element is 1, we're moving on to the next one.
+        double scalar = *(L + j*numRow + j);
 
-
-
-
-        }
+        rowOrColumnMultiply(L + j * numRow + j, L + numRow * numRow + j, 1 / scalar, numRow, 'c');
+        rowOrColumnMultiply(U + j * numColumn + j, U + (j + 1) * numColumn, scalar, numColumn, 'r');
     }
-
-
-
 }

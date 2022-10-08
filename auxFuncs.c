@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <windows.h>
 
 // Sending out error message and cleaning buffer
@@ -30,6 +31,11 @@ static void swap(double *num1, double *num2)
     double temp = *num1;
     *num1 = *num2;
     *num2 = temp;
+}
+
+int areEqual(double a, double b){
+    if (fabs(a - b) < 1E-10) return 1;
+    else return 0;
 }
 
 /* This function takes an input and verify that it's a *positive* int; and if it's in the array 'arr'.
