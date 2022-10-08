@@ -131,7 +131,11 @@ Through elimination, as 'input' gets echelon form, 'inverse' becomes the inverse
 If we don't want to find the inverse, we pass NULL
 
 Since LU decomposition relies on Gauss Elimination (echelon form), it makes sense to do it in this function as well
-BUT, this function does GaussJordan Elimination (*reduced* echelon form), so we tweaked it a bit in order for it to work
+BUT, this function does GaussJordan Elimination (*reduced* echelon form), so we had to add an addition to the algorithm:
+When we divide the row by pivot (which doesn't happen on Gauss elim'), we multiply the corresponding pivot in 'L'
+Then, in the end, we run on 'L's diagonal, and:
+For every element 'x' which is not equal to 1, we divide its column by 'x',
+and then go to 'U' and multiply the corresponding *row* by same 'x'. Think for yourself why we can do this.
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
 void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
@@ -229,6 +233,8 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* ma
     return product;
 }
 
+/* This function takes the permutation we acquired from 'GaussJordanAndFindInverse', and finds the LU decomposition of a given matrix
+We call to 'GaussJordan' once to get the permutation, and then pass it to this function, and call 'GaussJordan' again to get 'L' and 'U' */
 void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U)
 {
     inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
