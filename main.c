@@ -8,7 +8,7 @@ int main()
     enableColor();
     int mode = printOpeningAndGetNum();
 
-    printText(mode);
+    //printText(mode);
 
     switch(mode)
     {
@@ -29,15 +29,22 @@ int main()
 
         double *inverseMatrix = NULL;
         if (isSquare) inverseMatrix = (double *) malloc(numRow * numColumn * sizeof(double));
-        double *permutationMatrix = NULL;
-        if (isSquare) permutationMatrix = (double *) malloc(numRow * numColumn * sizeof(double));
         setIdentityMatrix(numRow, inverseMatrix); // We set it to identity matrix, and in the end of the process get the inverse
+
+        double *permutationMatrix = (double *) malloc(numRow * numRow * sizeof(double));
         setIdentityMatrix(numRow, permutationMatrix); // We set it to identity matrix, and in the end of the process get the permutation
+        double *L = (double *) malloc(numRow * numRow * sizeof(double));
+        setIdentityMatrix(numRow, L);
+        double *U = (double *) malloc(numRow * numColumn * sizeof(double));
+
+        double *copy = (double *) malloc(numRow * numColumn * sizeof(double));
+        arrayCopy(numRow, numColumn, inputMatrix, copy);
+
 
         printf("Your \x1b[96mmatrix\x1b[0m is:\n");
         displayMatrix(numColumn, numRow, inputMatrix);
 
-        GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix);
+        GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, NULL, NULL);
 
         rank = negativeZerosAndFindRank(numRow, numColumn, echelonFormMatrix);
         negativeZerosAndFindRank(numRow, numColumn, inverseMatrix);
@@ -95,7 +102,7 @@ int main()
 
         if (CramersRule(size, solution, scalarMatrix, bColumn))
         {
-            negativeZerosAndFindRank(size, 1, solution);
+            negativeZerosAndFindRank(1, size, solution);
             printf("The \x1b[92msolution vector\x1b[0m is: ");
             displaySolution(size, solution);
         }
@@ -133,7 +140,7 @@ int main()
         doubleVerify(numColumn2, numRow2, matrix2, "row");
 
         double *product = matrixMultiplier(numRow1, numColumn1, numColumn2, matrix1, matrix2);
-        negativeZerosAndFindRank(numColumn2, numRow1, product);
+        negativeZerosAndFindRank(numRow1, numColumn2, product);
         printf("The \x1b[92mproduct\x1b[0m is:\n");
         displayMatrix(numColumn2, numRow1, product);
 
