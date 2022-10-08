@@ -4,7 +4,7 @@
 #include "auxFuncsDec.h"
 
 // Getting rid of those annoying negative zeros, and returning row rank
-int negativeZerosAndFindRank(int numRow, int numColumn, double *matrix)
+int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
 {
     if (!matrix) return 0;
 
@@ -25,7 +25,7 @@ int negativeZerosAndFindRank(int numRow, int numColumn, double *matrix)
 
 /* This function takes the original matrix, its size, and a point the defines the wanted minor
 It copies said minor into 'dupMatrix' */
-static void getMinor(int n, int rowValue, int columnValue, double *originMatrix, double *dupMatrix)
+static void getMinor(int n, int rowValue, int columnValue, double* originMatrix, double* dupMatrix)
 {
     int i, j; // For running on originArray
     int x = 0; // For running on dupArray
@@ -42,14 +42,14 @@ static void getMinor(int n, int rowValue, int columnValue, double *originMatrix,
     }
 }
 
-/* Calculating determinant recursively, input array is 2d (a matrix), 'n' is number of columns
-Yes, I know we can multiply the numbers on the diagonal of an echelon form matrix, or compute it with the LU decomposition,
+/* Calculating determinant recursively (with minors), input array is a 1D matrix, 'n' is size
+Yes, I know we can utilize the GaussJordanElimination for that, or even compute it with the LU decomposition,
 but isn't recursion fun? */
-double deterCalc(int n, double *originMatrix)
+double deterCalc(int n, double* originMatrix)
 {
     if (n == 1) return *(originMatrix); // Base case, Det(a) = a
 
-    double *dupMatrix = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array represents a minor
+    double* dupMatrix = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array represents a minor
     double sum = 0, minor;
 
     for (int j = 0; j < n; j++)
@@ -65,7 +65,7 @@ double deterCalc(int n, double *originMatrix)
     return sum;
 }
 
-void findAndPrintAdjoint(int n, double *matrix)
+void findAndPrintAdjoint(int n, double* matrix)
 {
     if (n == 1)
     {
@@ -73,8 +73,8 @@ void findAndPrintAdjoint(int n, double *matrix)
       return;
     }
 
-    double *dupArray = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array stores the minor
-    double *adjoint = (double*) malloc(n * n * sizeof(double));
+    double* dupArray = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array stores the minor
+    double* adjoint = (double*) malloc(n * n * sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -88,11 +88,13 @@ void findAndPrintAdjoint(int n, double *matrix)
 
     negativeZerosAndFindRank(n, n, adjoint);
     displayMatrix(n, n, adjoint);
+    free(dupArray);
+    free(adjoint);
 }
 
 /* This function takes the 'A' and 'b' in Ax=b, and stores the 'x', if there is a solution, in 'solution'
 The calculation is done with Cramer's rule */
-int CramersRule(int size, double *solution, double *scalarMatrix, double *bColumn)
+int CramersRule(int size, double* solution, double* scalarMatrix, double* bColumn)
 {
     double matrixDeter = deterCalc(size, scalarMatrix);
 
@@ -112,7 +114,8 @@ int CramersRule(int size, double *solution, double *scalarMatrix, double *bColum
 
 /* This function multiplies a row or column, in a 1D matrix, by a scalar
 We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c'). Based on that we know what arithmetic needs to be done */
-static void rowOrColumnMultiply(double *start, double *end, double scalar, int numColumn, char row_or_column){
+static void rowOrColumnMultiply(double* start, double* end, double scalar, int numColumn, char row_or_column)
+{
     int interval = (row_or_column == 'r' ? 1 : numColumn);
 
     while (start != end)
@@ -131,8 +134,8 @@ Since LU decomposition relies on Gauss Elimination (echelon form), it makes sens
 BUT, this function does GaussJordan Elimination (*reduced* echelon form), so we tweaked it a bit in order for it to work
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
-void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, double *inverseMatrix,
-                               double *permutation, int *isPermutationIdentity,  double *L, double *U)
+void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
+                               double* permutation, int* isPermutationIdentity,  double* L, double* U)
 {
     /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
     'k' (row) and 'p' (column) are used to subtract the entire pivot's row from all the rows below it */
@@ -147,10 +150,10 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, d
 
             if (i != z) // In this case, our pivot has zeroed out (can't happen when finding LU), and we need to switch rows for a new pivot.
             {
-                switchRows(numColumn, i, z, inputMatrix);
-                if (inverseMatrix) switchRows(numColumn, i, z, inverseMatrix);
+                switchRows(i, z, numColumn, inputMatrix);
+                if (inverseMatrix) switchRows(i, z, numColumn, inverseMatrix);
 
-                if (permutation) switchRows(numColumn, i, z, permutation); // We need to "write" the switch in the permutation
+                if (permutation) switchRows(i, z, numColumn, permutation); // We need to "write" the switch in the permutation
                 if (isPermutationIdentity) *isPermutationIdentity = 0;
             }
 
@@ -199,7 +202,7 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double *inputMatrix, d
     }
 }
 
-static double dotProduct(int column1, int column2, double *vector1, double *vector2)
+static double dotProduct(int column1, int column2, double* vector1, double* vector2)
 {
     double sum = 0;
     for (int i = 0; i < column1; i++) sum += *(vector1 + i) * *(vector2 + i*column2);
@@ -211,9 +214,9 @@ static double dotProduct(int column1, int column2, double *vector1, double *vect
 This function multiplies 'matrix1' and 'matrix2' (in this order)
 Note that 'numColumn1 == numRow2', so no need for another variable
 Note that order of matrices passed matters */
-double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double *matrix1, double *matrix2)
+double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* matrix1, double* matrix2)
 {
-    double *product = (double*) malloc(numRow1 * numColumn2 * sizeof(double));
+    double* product = (double*) malloc(numRow1 * numColumn2 * sizeof(double));
 
     for (int i = 0; i < numRow1; i++)
     {
@@ -226,7 +229,8 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double *ma
     return product;
 }
 
-void LUDecomposition(int numRow, int numColumn, double *inputMatrix, double *Permutation, double *L, double *U){
+void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U)
+{
     inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
     GaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, NULL, L, U);
     free(inputMatrix);
@@ -240,4 +244,26 @@ void LUDecomposition(int numRow, int numColumn, double *inputMatrix, double *Per
         rowOrColumnMultiply(L + j * numRow + j, L + numRow * numRow + j, 1 / scalar, numRow, 'c');
         rowOrColumnMultiply(U + j * numColumn + j, U + (j + 1) * numColumn, scalar, numColumn, 'r');
     }
+}
+
+/* This function gets the 'D' and 'V' matrices from the 'U' matrix (from 'LU' decomposition). Thus, we get an 'LVD' decomposition
+This decomposition only exists when the matrix is square, so 'U' is square, so no need for 'numColumn' */
+void findDVFromUAndPrint(int numRow, double* U)
+{
+    double* D = (double*) malloc(numRow * numRow * sizeof(double));
+    setIdentityMatrix(numRow, D);
+    double* V = (double*) malloc(numRow * numRow * sizeof(double));
+
+    for (int i = 0; i < numRow; i++)
+    {
+        double pivot = *(U + i*numRow + i);
+        *(D + i*numRow + i) = pivot;
+
+        for (int j = 0; j < numRow; j++) *(V + i*numRow + j) = *(U + i*numRow + j) / pivot;
+    }
+
+    printf("D:\n");
+    displayMatrix(numRow, numRow, D);
+    printf("V:\n");
+    displayMatrix(numRow, numRow, V);
 }

@@ -26,7 +26,7 @@ int enableColor(void)
     return 1; // Return 1 on success
 }
 
-static void swap(double *num1, double *num2)
+static void swap(double* num1, double* num2)
 {
     double temp = *num1;
     *num1 = *num2;
@@ -40,7 +40,7 @@ int areEqual(double a, double b){
 
 /* This function takes an input and verify that it's a *positive* int; and if it's in the array 'arr'.
 if we only want to check whether the input is a positive int, we can pass NULL as 'arr', and an arbitrary int as 'arrLen' */
-void positiveIntVerify(int *input, int *arr, int arrLen)
+void positiveIntVerify(int* input, int* arr, int arrLen)
 {
     while (1)
     {
@@ -60,7 +60,7 @@ void positiveIntVerify(int *input, int *arr, int arrLen)
 
 /* For getting matrix elements & verifying them. Verification part is a tad spaghetti, I just wanted to verify perfectly
 parameter 'str' can be 'row' or 'equation', based on what mode the user chose */
-void doubleVerify(int numColumn, int numRow, double *matrix, char *str)
+void doubleVerify(int numRow, int numColumn, double* matrix, char* str)
 {
     int i, j, symbol, flag = 0;
     double temp1, temp2;
@@ -104,7 +104,7 @@ void doubleVerify(int numColumn, int numRow, double *matrix, char *str)
 }
 
 // This function gets number of rows and number of columns from user
-void getRowAndColumnNum(int *numRow, int *numColumn)
+void getRowAndColumnNum(int* numRow, int* numColumn)
 {
     printf("Enter row size: "); // Number of arrays
     positiveIntVerify (numRow, NULL, 0);
@@ -115,7 +115,7 @@ void getRowAndColumnNum(int *numRow, int *numColumn)
     printf("\n");
 }
 
-void displayMatrix(int numColumn, int numRow, double *matrix)
+void displayMatrix(int numRow, int numColumn, double* matrix)
 {
     for (int i = 0; i < numRow; i++)
     {
@@ -130,7 +130,7 @@ void displayMatrix(int numColumn, int numRow, double *matrix)
 }
 
 // 'displaySolution' displays vectors in a slightly different way than 'displayMatrix'
-void displaySolution(int size, double *solution) // For displaying the solution
+void displaySolution(int size, double* solution) // For displaying the solution
 {
     int i;
 
@@ -140,7 +140,7 @@ void displaySolution(int size, double *solution) // For displaying the solution
 }
 
 // Setting given square matrix to identity matrix
-void setIdentityMatrix(int n, double *matrix)
+void setIdentityMatrix(int n, double* matrix)
 {
     if (!matrix) return;
 
@@ -154,7 +154,7 @@ void setIdentityMatrix(int n, double *matrix)
     }
 }
 
-void arrayCopy(int numRow, int numColumn, double *srcMatrix, double *destMatrix)
+void arrayCopy(int numRow, int numColumn, double* srcMatrix, double* destMatrix)
 {
     for (int i = 0; i < numRow; i++)
     {
@@ -167,7 +167,7 @@ void arrayCopy(int numRow, int numColumn, double *srcMatrix, double *destMatrix)
 
 /* The function takes a matrix, a column vector and a number 'column'.
 it swaps between the column vector and the column in the matrix whose number is stored in 'column' */
-void switchColumns(int numRow, int numColumn, int column, double *matrix, double *arrColumn)
+void switchColumns(int numRow, int numColumn, int column, double* matrix, double* arrColumn)
 {
     if (column < 0 || column >= numColumn) return;
 
@@ -175,14 +175,14 @@ void switchColumns(int numRow, int numColumn, int column, double *matrix, double
 }
 
 // This function swaps between two rows in a matrix
-void switchRows(int numColumn, int row1, int row2, double *matrix)
+void switchRows(int row1, int row2, int numColumn, double* matrix)
 {
     for (int j = 0; j < numColumn; j++) swap(matrix + row1*numColumn + j, matrix + row2*numColumn + j);
 }
 
 /* This function takes a matrix and separate a column (listed as 'column') from it.
 It returns a pointer to a new matrix without that column, and it stores that column in 'arrColumn' */
-double* separateColumn(int numRow, int numColumn, int column, double *matrix, double *arrColumn)
+double* separateColumn(int numRow, int numColumn, int column, double* matrix, double* arrColumn)
 {
     if (column < 0 || column >= numColumn) return NULL;
 
