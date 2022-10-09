@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 #include <windows.h>
 
 // Sending out error message and cleaning buffer
@@ -26,14 +27,14 @@ int enableColor(void)
     return 1; // Return 1 on success
 }
 
-static void swap(double* num1, double* num2)
+void swap(double* num1, double* num2)
 {
     double temp = *num1;
     *num1 = *num2;
     *num2 = temp;
 }
 
-int areEqual(double a, double b){
+bool areEqual(double a, double b){
     if (fabs(a - b) < 1E-10) return 1;
     else return 0;
 }
@@ -62,7 +63,8 @@ void positiveIntVerify(int* input, int* arr, int arrLen)
 parameter 'str' can be 'row' or 'equation', based on what mode the user chose */
 void doubleVerify(int numRow, int numColumn, double* matrix, char* str)
 {
-    int i, j, symbol, flag = 0;
+    int i, j, symbol;
+    bool flag = 0;
     double temp1, temp2;
 
     for (i = 0; i < numRow; i++)
@@ -117,6 +119,8 @@ void getRowAndColumnNum(int* numRow, int* numColumn)
 
 void displayMatrix(int numRow, int numColumn, double* matrix)
 {
+    if (!matrix) return;
+
     for (int i = 0; i < numRow; i++)
     {
         for (int j = 0; j < numColumn; j++)

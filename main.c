@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "auxFuncsDec.h"
 #include "coreFuncsDec.h"
 
@@ -18,7 +19,7 @@ int main()
         double deter;
 
         getRowAndColumnNum(&numRow, &numColumn);
-        int isSquare = (numRow == numColumn);
+        bool isSquare = (numRow == numColumn);
 
         double* inputMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
         doubleVerify(numRow, numColumn, inputMatrix, "row");
@@ -130,7 +131,7 @@ int main()
         double* scalarMatrix = separateColumn(size, size + 1, size, inputMatrix, bColumn); // Stores the A matrix from Ax=b
         free(inputMatrix);
 
-        if (CramersRule(size, solution, scalarMatrix, bColumn))
+        if (CramersRule(size, scalarMatrix, solution, bColumn))
         {
             negativeZerosAndFindRank(1, size, solution);
             printf("The \x1b[92msolution vector\x1b[0m is: ");
@@ -154,11 +155,14 @@ int main()
         printf("For \x1b[94mmatrix 2\x1b[0m:\n\n");
         getRowAndColumnNum(&numRow2, &numColumn2);
 
-        if (numColumn1 != numRow2)
+        while (numColumn1 != numRow2)
         {
-            printf("Number of columns of \x1b[91mmatrix 1\x1b[0m must be equal to number of rows of \x1b[94mmatrix 2\x1b[0m. Terminating . . .\n\n");
-            system("pause");
-            exit(0);
+            printf("Number of columns of \x1b[91mmatrix 1\x1b[0m must be equal to number of rows of \x1b[94mmatrix 2\x1b[0m. Please try again:\n");
+
+            printf("For \x1b[91mmatrix 1\x1b[0m:\n\n");
+            getRowAndColumnNum(&numRow1, &numColumn1);
+            printf("For \x1b[94mmatrix 2\x1b[0m:\n\n");
+            getRowAndColumnNum(&numRow2, &numColumn2);
         }
 
         printf("For \x1b[91mmatrix 1\x1b[0m:\n\n");

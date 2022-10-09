@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 #include "auxFuncsDec.h"
 
-// Getting rid of those annoying negative zeros, and returning row rank
+// Getting rid of those annoying negative zeros, and returning row rank of an echelon form matrix
 int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
 {
     if (!matrix) return 0;
 
-    int flag = 0, nonZeroRows = 0;
+    bool flag = 0;
+    int nonZeroRows = 0;
     for (int i = 0; i < numRow; i++)
     {
         for (int j = 0; j < numColumn; j++)
@@ -94,11 +96,11 @@ void findAndPrintAdjoint(int n, double* matrix)
 
 /* This function takes the 'A' and 'b' in Ax=b, and stores the 'x', if there is a solution, in 'solution'
 The calculation is done with Cramer's rule */
-int CramersRule(int size, double* solution, double* scalarMatrix, double* bColumn)
+bool CramersRule(int size, double* scalarMatrix, double* solution, double* bColumn)
 {
     double matrixDeter = deterCalc(size, scalarMatrix);
 
-    if (matrixDeter == 0) return 0; // No single solution
+    if (areEqual(matrixDeter, 0.0)) return 0; // No single solution
 
     for (int i = 0; i < size; i++)
     {
@@ -113,7 +115,8 @@ int CramersRule(int size, double* solution, double* scalarMatrix, double* bColum
 }
 
 /* This function multiplies a row or column, in a 1D matrix, by a scalar
-We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c'). Based on that we know what arithmetic needs to be done */
+We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c').
+Based on that we know what arithmetic needs to be done */
 static void rowOrColumnMultiply(double* start, double* end, double scalar, int numColumn, char row_or_column)
 {
     int interval = (row_or_column == 'r' ? 1 : numColumn);
@@ -139,7 +142,7 @@ and then go to 'U' and multiply the corresponding *row* by same 'x'. Think for y
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
 void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
-                               double* permutation, int* isPermutationIdentity,  double* L, double* U)
+                               double* permutation, int* isPermutationIdentity, double* L, double* U)
 {
     /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
     'k' (row) and 'p' (column) are used to subtract the entire pivot's row from all the rows below it */
@@ -163,20 +166,21 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, d
 
             pivot = *(inputMatrix + z * numColumn + j);
             if (L) *(L + z * numRow + z) *= pivot;
-            rowOrColumnMultiply(inputMatrix + z*numColumn + z, inputMatrix + z*numColumn + numColumn, 1 / pivot, numColumn, 'r');
+            rowOrColumnMultiply(inputMatrix + z*numColumn + 0, inputMatrix + z*numColumn + numColumn, 1 / pivot, numColumn, 'r');
+            if (inverseMatrix) rowOrColumnMultiply(inverseMatrix + z*numColumn + 0, inverseMatrix + z*numColumn + numColumn, 1 / pivot, numColumn, 'r');
             // Dividing the row by leading entry (pivot)
 
             for (k = z + 1; k < numRow; k++) // Subtracting pivot's row ('z's row) from the rows below it
             {
                 scalar = *(inputMatrix + k * numColumn + j);
                 if (L) *(L + k * numRow + z) = scalar;
-                for (p = z; p < numColumn; p++)
+                for (p = 0; p < numColumn; p++) // Note to self: can't start from 'z' instead of 0, since we have to calculate inverse as well
                 {
                    *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + z * numColumn + p);
                    if (inverseMatrix) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + z * numColumn + p);
 
                    if (areEqual(*(inputMatrix + k*numColumn + p), 0.0)) *(inputMatrix + k*numColumn + p) = 0; // Handling rounding errors
-                   if (inverseMatrix && areEqual(*(inputMatrix + k*numColumn + p), 0.0)) *(inverseMatrix + k*numColumn + p) = 0;
+                   if (inverseMatrix && areEqual(*(inverseMatrix + k*numColumn + p), 0.0)) *(inverseMatrix + k*numColumn + p) = 0;
                 }
             }
             z++;
@@ -195,7 +199,7 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, d
             for (k = i - 1; k >= 0; k--) // Subtracting pivot's row ('i's row) from rows above
                 {
                     scalar = *(inputMatrix + k * numColumn + j);
-                    for (p = numColumn - 1; p >= i; p--)
+                    for (p = 0; p < numColumn; p++)
                     {
                         *(inputMatrix + k*numColumn + p) -= scalar * *(inputMatrix + i * numColumn + p);
                         if (inverseMatrix) *(inverseMatrix + k*numColumn + p) -= scalar * *(inverseMatrix + i * numColumn + p);
@@ -272,4 +276,70 @@ void findDVFromUAndPrint(int numRow, double* U)
     displayMatrix(numRow, numRow, D);
     printf("V:\n");
     displayMatrix(numRow, numRow, V);
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY
+This function returns the transposition of 'inputMatrix'.
+Remember that 'numRow' and 'numColumn' are switched for the transposition! */
+static double* transpose(int numRow, int numColumn, double* inputMatrix)
+{
+    double* transpose = (double*) malloc(numRow * numColumn * sizeof(double));
+
+    // Running on transpose, so 'numRow' and 'numColumn' roles are switched
+    for (int i = 0; i < numColumn; i++)
+    {
+        for (int j = 0; j < numRow; j++)
+        {
+            *(transpose + i*numRow + j) = *(inputMatrix + j*numColumn + i);
+        }
+    }
+
+    return transpose;
+}
+
+bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix)
+{
+    bool columnsIndependent = 0;
+    double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
+    arrayCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
+
+    if (numColumn <= numRow) // If there's more columns than rows, they're necessarily dependent, and there's no need to find the rank
+    {
+        GaussJordanAndFindInverse(numRow, numColumn, inputMatrixCopy, NULL, NULL, NULL, NULL, NULL);
+        int rank = negativeZerosAndFindRank(numRow, numColumn, inputMatrixCopy);
+        if (numColumn == rank) columnsIndependent = 1;
+    }
+    free(inputMatrixCopy);
+
+    return columnsIndependent;
+}
+
+
+/* THIS FUNCTION ALLOCATES MEMORY
+This function returns the pseudo inverse of the 'inputMatrix', *if and only if the columns are independent*, and NULL otherwise
+Although a pseudo inverse exists for every matrix, when the columns are independent, there's a simple formula to calculate it;
+and in Least Squares it's all we care about
+
+Remember that 'numRow' and 'numColumn' are switched for the pseudo inverse! */
+double* pseudoInverseCalc(int numRow, int numColumn, double* A)
+{
+    if (!areColumnsIndependent(numRow, numColumn, A)) return NULL;
+
+    double* A_T = transpose(numRow, numColumn, A); // A^T
+    double* A_T_A = matrixMultiplier(numColumn, numRow, numColumn, A_T, A); // A^T * A
+    double* A_T_A_inverse = (double*) malloc(numColumn * numColumn * sizeof(double)); // (A^T * A)^-1
+    setIdentityMatrix(numColumn, A_T_A_inverse);
+    GaussJordanAndFindInverse(numColumn, numColumn, A_T_A, A_T_A_inverse, NULL, NULL, NULL, NULL);
+
+    double* pseudo_inverse = matrixMultiplier(numColumn, numColumn, numRow, A_T_A_inverse, A_T); // (A^T * A)^-1 * A^T
+
+    free(A_T);
+    free(A_T_A);
+    free(A_T_A_inverse);
+    return pseudo_inverse;
+}
+
+void leastSquares(int numRow, int numColumn, double* A, double* x, double* b)
+{
+
 }

@@ -1,4 +1,5 @@
 int enableColor(void);
+void swap(double* num1, double* num2);
 int areEqual(double a, double b);
 void positiveIntVerify(int* input, int* arr, int arrLen);
 void doubleVerify(int numRow, int numColumn, double* matrix, char* str);
