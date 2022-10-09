@@ -7,4 +7,4 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, d
 double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* matrix1, double* matrix2);
 void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U);
 void findDVFromUAndPrint(int numRow, double* U);
-double* pseudoInverseCalc(int numRow, int numColumn, double* A);
+double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b);

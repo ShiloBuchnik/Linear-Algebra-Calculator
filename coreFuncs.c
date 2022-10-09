@@ -297,7 +297,7 @@ static double* transpose(int numRow, int numColumn, double* inputMatrix)
     return transpose;
 }
 
-bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix)
+static bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix)
 {
     bool columnsIndependent = 0;
     double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
@@ -321,7 +321,7 @@ Although a pseudo inverse exists for every matrix, when the columns are independ
 and in Least Squares it's all we care about
 
 Remember that 'numRow' and 'numColumn' are switched for the pseudo inverse! */
-double* pseudoInverseCalc(int numRow, int numColumn, double* A)
+static double* pseudoInverseCalc(int numRow, int numColumn, double* A)
 {
     if (!areColumnsIndependent(numRow, numColumn, A)) return NULL;
 
@@ -339,7 +339,33 @@ double* pseudoInverseCalc(int numRow, int numColumn, double* A)
     return pseudo_inverse;
 }
 
-void leastSquares(int numRow, int numColumn, double* A, double* x, double* b)
+/* THIS FUNCTION ALLOCATES MEMORY
+This function subtract two vectors of same size, and returns the result */
+static double* vectorSubtraction(int size, double* vector1, double* vector2)
 {
+    double* result = (double*) malloc(size * sizeof(double));
+    for (int i = 0; i < size; i++) *(result + i) = *(vector1 + i) - *(vector2 + i);
 
+    return result;
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY
+This function solves a system of equations through the least squares algorithm
+If there's a *single* minimum point, it stores it in 'x' (note it's a double pointer), and returns the remainder vector
+(When the minimum point is a true solution, the remainder is 0, obviously)
+If there's infinite solutions, it returns NULL */
+double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b)
+{
+    double* pseudo_inverse = pseudoInverseCalc(numRow, numColumn, A);
+    if (!pseudo_inverse) return NULL;
+
+    *x = matrixMultiplier(numColumn, numRow, 1, pseudo_inverse, b); // This is the minimal point
+
+    double* temp = matrixMultiplier(numRow, numColumn, 1, A, *x);
+    double* P_X = vectorSubtraction(numRow, temp, b); // This is the function's value ('p(x)') at minimal point
+
+    free(pseudo_inverse);
+    free(temp);
+
+    return P_X;
 }

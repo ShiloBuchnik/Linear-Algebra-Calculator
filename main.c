@@ -111,7 +111,7 @@ int main()
         break;
     }
 
-    case 2: // Set of equations calculator
+    case 2: // System of equations calculator. Make sure to change the interface to fit with least squares
     {
         int size;
 
