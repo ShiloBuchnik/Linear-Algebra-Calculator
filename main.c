@@ -9,23 +9,22 @@ int main()
     enableColor();
     int mode = printOpeningAndGetNum();
 
-    //printText(mode);
+    printText(mode);
 
     switch(mode)
     {
     case 1: // Matrix calculator
     {
-        int numRow, numColumn, rank;
-        double deter;
+        int numRow, numColumn;
 
         getRowAndColumnNum(&numRow, &numColumn);
         bool isSquare = (numRow == numColumn);
 
         double* inputMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
-        doubleVerify(numRow, numColumn, inputMatrix, "row");
+        doubleVerify(numRow, numColumn, inputMatrix, 1);
 
         double* echelonFormMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
-        arrayCopy(numRow, numColumn, inputMatrix, echelonFormMatrix);
+        matrixCopy(numRow, numColumn, inputMatrix, echelonFormMatrix);
 
 
         double* inverseMatrix = NULL;
@@ -48,12 +47,12 @@ int main()
         GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
 
         double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
-        arrayCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
+        matrixCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
         LUDecomposition(numRow, numColumn, inputMatrixCopy, permutationMatrix, L, U);
         free(inputMatrixCopy);
 
 
-        rank = negativeZerosAndFindRank(numRow, numColumn, echelonFormMatrix);
+        int rank = negativeZerosAndFindRank(numRow, numColumn, echelonFormMatrix);
         negativeZerosAndFindRank(numRow, numColumn, inverseMatrix);
 
         printf("The matrix in \x1b[92mreduced row echelon form\x1b[0m is:\n");
@@ -61,6 +60,7 @@ int main()
 
         printf("The \x1b[93mrank\x1b[0m is: %d\n\n", rank);
 
+        double deter;
         if (isSquare)
         {
             deter = deterCalc(numColumn, inputMatrix);
@@ -74,12 +74,12 @@ int main()
 
             printf("The \x1b[91mdeterminant\x1b[0m is: %lf\n\n", deter);
 
-            printf("The \x1b[95madjoint matrix\x1b[0m is:\n");
+            printf("The \x1b[95madjoint matrix\x1b[0m is:\n\n");
             findAndPrintAdjoint(numColumn, inputMatrix);
        }
         else
             printf("Non-square matrices don't have an \x1b[94minverse matrix\x1b[0m, "
-            "nor a \x1b[91mdeterminant\x1b[0m, nor an \x1b[95madjoint\x1b[0m\n\n");
+            "nor a \x1b[91mdeterminant\x1b[0m, nor an \x1b[95madjoint\x1b[0m\n\n\n");
 
 
         printf("The LU decomposition is:\n");
@@ -111,37 +111,75 @@ int main()
         break;
     }
 
-    case 2: // System of equations calculator. Make sure to change the interface to fit with least squares
+    case 2: // System of equations calculator.
     {
-        int size;
+        int numRow, numColumn;
 
-        printf("Enter size of system: ");
-        positiveIntVerify(&size, NULL, 0);
-        while (getchar() != '\n');
+        printf("Enter variable coefficients matrix's (\x1b[31mA\x1b[0m) dimensions:\n");
+        getRowAndColumnNum(&numRow, &numColumn);
+        //while (getchar() != '\n');
         printf("\n");
 
-        double* solution = (double*) malloc(size * sizeof(double));
-        double* inputMatrix = (double*) malloc(size * (size + 1) * sizeof(double)); // The extra column in 'inputMatrix' is for the b vector in Ax=b
-        doubleVerify(size, size + 1, inputMatrix, "equation");
+        double* A = (double*) malloc(numRow * numColumn * sizeof(double));
+        doubleVerify(numRow, numColumn, A, 1);
 
-        printf("The \x1b[96mscalars\x1b[0m of your system are:\n");
-        displayMatrix(size, size + 1, inputMatrix);
+        printf("Enter the free coefficients (\x1b[34mb\x1b[0m):\n");
+        double* b = (double*) malloc(numRow * sizeof(double));
+        doubleVerify(numRow, 1, b, 0);
 
-        double* bColumn = (double *) malloc(size * sizeof(double)); // stores the b vector from Ax=b
-        double* scalarMatrix = separateColumn(size, size + 1, size, inputMatrix, bColumn); // Stores the A matrix from Ax=b
-        free(inputMatrix);
+        double* A_star = insertColumn(numRow, numColumn, numColumn, A, b);
+        printf("The scalars of your system are:\n");
+        displayMatrix(numRow, numColumn + 1, A_star);
 
-        if (CramersRule(size, scalarMatrix, solution, bColumn))
+        double* A_copy = (double*) malloc(numRow * numColumn * sizeof(double)); // We want 'A' to remain the same, so we copy to find rank
+        matrixCopy(numRow, numColumn, A, A_copy);
+        GaussJordanAndFindInverse(numRow, numColumn, A_copy, NULL, NULL, NULL, NULL, NULL);
+        int A_rank = negativeZerosAndFindRank(numRow, numColumn, A_copy);
+        free(A_copy);
+
+        GaussJordanAndFindInverse(numRow, numColumn + 1, A_star, NULL, NULL, NULL, NULL, NULL); // We don't care about A_star besides its rank
+        int A_star_rank = negativeZerosAndFindRank(numRow, numColumn + 1, A_star);
+        free(A_star);
+
+        double* x = NULL;
+        double* remainder = leastSquares(numRow, numColumn, A, &x, b);
+
+
+        /* If 'leastSquares' returned something (the columns are independent) - no problem.
+        Either there's a single true solution, or a single minimal point, in least squares sense
+
+        But if it returned 'NULL' (the columns are dependent) - that's where our 'A' and 'A_star' ranks come in place.
+        If the ranks are equal, there are infinite *true* solutions
+        If the ranks are not equal, there are infinite minimal points (not true solutions), in least squares sense */
+        if (remainder)
         {
-            negativeZerosAndFindRank(1, size, solution);
-            printf("The \x1b[92msolution vector\x1b[0m is: ");
-            displaySolution(size, solution);
-        }
-        else printf("The system doesn't have a single solution (might have infinite or none)\n\n");
+            negativeZerosAndFindRank(numColumn, 1, x);
+            negativeZerosAndFindRank(numRow, 1, remainder);
 
-        free(scalarMatrix);
-        free(solution);
-        free(bColumn);
+            // We find out if the remainder is non-0 through the theorem: 'a matrix is 0 iff its rank is 0'
+            if (!negativeZerosAndFindRank(numRow, 1, remainder))
+            {
+                printf("The solution vector \x1b[92mx\x1b[0m is: ");
+                displaySolution(numColumn, x);
+            }
+            else
+            {
+                printf("There isn't a solution. The minimal solution vector \x1b[92mx\x1b[0m in 'Least Square' sense is:\n");
+                displaySolution(numColumn, x);
+                printf("With a \x1b[96mremainder\x1b[0m vector:\n");
+                displaySolution(numRow, remainder);
+            }
+        }
+        else
+        {
+            if (A_rank == A_star_rank) printf("There are infinite solutions\n");
+            else printf("There isn't a solution, but there are infinite minimal vectors in 'Least Square' sense\n");
+        }
+
+        free(A);
+        free(b);
+        free(x);
+        free(remainder);
         break;
     }
 
@@ -167,11 +205,11 @@ int main()
 
         printf("For \x1b[91mmatrix 1\x1b[0m:\n\n");
         double* matrix1 = (double*) malloc(numRow1 * numColumn1 * sizeof(double));
-        doubleVerify(numRow1, numColumn1, matrix1, "row");
+        doubleVerify(numRow1, numColumn1, matrix1, 1);
 
         printf("For \x1b[94mmatrix 2\x1b[0m:\n\n");
         double* matrix2 = (double*) malloc(numRow2 * numColumn2 * sizeof(double));
-        doubleVerify(numRow2, numColumn2, matrix2, "row");
+        doubleVerify(numRow2, numColumn2, matrix2, 1);
 
         double* product = matrixMultiplier(numRow1, numColumn1, numColumn2, matrix1, matrix2);
         negativeZerosAndFindRank(numRow1, numColumn2, product);

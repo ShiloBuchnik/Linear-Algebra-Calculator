@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "auxFuncsDec.h"
 
-// Getting rid of those annoying negative zeros, and returning row rank of an echelon form matrix
+// Getting rid of those annoying negative zeros, and returning row rank *of an echelon form matrix*
 int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
 {
     if (!matrix) return 0;
@@ -15,7 +15,7 @@ int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
     {
         for (int j = 0; j < numColumn; j++)
         {
-            if (*(matrix + i*numColumn + j) == 0.0) *(matrix + i*numColumn + j) = 0.0;
+            if (areEqual(*(matrix + i*numColumn + j), 0.0)) *(matrix + i*numColumn + j) = 0.0;
             else flag = 1;
         }
         if (flag) nonZeroRows++;
@@ -94,26 +94,6 @@ void findAndPrintAdjoint(int n, double* matrix)
     free(adjoint);
 }
 
-/* This function takes the 'A' and 'b' in Ax=b, and stores the 'x', if there is a solution, in 'solution'
-The calculation is done with Cramer's rule */
-bool CramersRule(int size, double* scalarMatrix, double* solution, double* bColumn)
-{
-    double matrixDeter = deterCalc(size, scalarMatrix);
-
-    if (areEqual(matrixDeter, 0.0)) return 0; // No single solution
-
-    for (int i = 0; i < size; i++)
-    {
-        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching to calculate determinant ('size' represents the b vector in Ax=b)
-
-        *(solution + i) = deterCalc(size, scalarMatrix) / matrixDeter; // The actual formula
-
-        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching back
-    }
-
-    return 1; // A single solution found
-}
-
 /* This function multiplies a row or column, in a 1D matrix, by a scalar
 We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c').
 Based on that we know what arithmetic needs to be done */
@@ -139,6 +119,8 @@ When we divide the row by pivot (which doesn't happen on Gauss elim'), we multip
 Then, in the end, we run on 'L's diagonal, and:
 For every element 'x' which is not equal to 1, we divide its column by 'x',
 and then go to 'U' and multiply the corresponding *row* by same 'x'. Think for yourself why we can do this.
+
+The 'isPermutationIdentity' flag is set to 1 if there's no need for a permutation
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
 void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
@@ -188,7 +170,7 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, d
         }
     }
 
-    if (U) arrayCopy(numRow, numColumn, inputMatrix, U);
+    if (U) matrixCopy(numRow, numColumn, inputMatrix, U);
 
     for (i = numRow - 1; i >= 0; i--) // For the upper triangle of the matrix. After this, the matrix is in *reduced* echelon form
     {
@@ -237,8 +219,12 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* ma
     return product;
 }
 
-/* This function takes the permutation we acquired from 'GaussJordanAndFindInverse', and finds the LU decomposition of a given matrix
-We call to 'GaussJordan' once to get the permutation, and then pass it to this function, and call 'GaussJordan' again to get 'L' and 'U' */
+/* This function takes the permutation needed, and finds the LU decomposition of a given matrix
+Use it as follows:
+Call to 'GaussJordan' once to get the permutation and the flag telling us if no permutation is needed; with 'L' and 'U' as NULL
+Now multiply the permutation with the matrix, and pass it to 'GaussJordan' to get 'L' and 'U'; with now permutation and the flag as NULL
+
+Which makes sense, since in the algorithm we need to first find the permutation in elimination, and then eliminate again */
 void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U)
 {
     inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
@@ -278,7 +264,7 @@ void findDVFromUAndPrint(int numRow, double* U)
     displayMatrix(numRow, numRow, V);
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'transpose'
 This function returns the transposition of 'inputMatrix'.
 Remember that 'numRow' and 'numColumn' are switched for the transposition! */
 static double* transpose(int numRow, int numColumn, double* inputMatrix)
@@ -301,7 +287,7 @@ static bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix
 {
     bool columnsIndependent = 0;
     double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
-    arrayCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
+    matrixCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
 
     if (numColumn <= numRow) // If there's more columns than rows, they're necessarily dependent, and there's no need to find the rank
     {
@@ -315,7 +301,7 @@ static bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix
 }
 
 
-/* THIS FUNCTION ALLOCATES MEMORY
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'pseudo_inverse'
 This function returns the pseudo inverse of the 'inputMatrix', *if and only if the columns are independent*, and NULL otherwise
 Although a pseudo inverse exists for every matrix, when the columns are independent, there's a simple formula to calculate it;
 and in Least Squares it's all we care about
@@ -339,7 +325,7 @@ static double* pseudoInverseCalc(int numRow, int numColumn, double* A)
     return pseudo_inverse;
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'result'
 This function subtract two vectors of same size, and returns the result */
 static double* vectorSubtraction(int size, double* vector1, double* vector2)
 {
@@ -349,7 +335,7 @@ static double* vectorSubtraction(int size, double* vector1, double* vector2)
     return result;
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'x' AND 'p_x'
 This function solves a system of equations through the least squares algorithm
 If there's a *single* minimum point, it stores it in 'x' (note it's a double pointer), and returns the remainder vector
 (When the minimum point is a true solution, the remainder is 0, obviously)
@@ -362,10 +348,35 @@ double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b
     *x = matrixMultiplier(numColumn, numRow, 1, pseudo_inverse, b); // This is the minimal point
 
     double* temp = matrixMultiplier(numRow, numColumn, 1, A, *x);
-    double* P_X = vectorSubtraction(numRow, temp, b); // This is the function's value ('p(x)') at minimal point
+    double* p_x = vectorSubtraction(numRow, temp, b); // This is the function p(x) (the remainder function) at the minimal point
 
     free(pseudo_inverse);
     free(temp);
 
-    return P_X;
+    return p_x;
 }
+
+
+// Below are functions that were used in the code, and are no longer needed. Why do I keep them? idk why not
+
+/* I ditched this algorithm for solving systems of equations in favor of least squares, which is more comprehensive and time-efficient
+This function takes the 'A' and 'b' in Ax=b, and stores the 'x', if there is a solution, in 'solution'
+The calculation is done with Cramer's rule
+bool CramersRule(int size, double* scalarMatrix, double* solution, double* bColumn)
+{
+    double matrixDeter = deterCalc(size, scalarMatrix);
+
+    if (areEqual(matrixDeter, 0.0)) return 0; // No single solution
+
+    for (int i = 0; i < size; i++)
+    {
+        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching to calculate determinant ('size' represents the b vector in Ax=b)
+
+        *(solution + i) = deterCalc(size, scalarMatrix) / matrixDeter; // The actual formula
+
+        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching back
+    }
+
+    return 1; // A single solution found
+}
+*/
