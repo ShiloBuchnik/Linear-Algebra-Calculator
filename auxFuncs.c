@@ -176,29 +176,85 @@ void switchRows(int row1, int row2, int numColumn, double* matrix)
     for (int j = 0; j < numColumn; j++) swap(matrix + row1*numColumn + j, matrix + row2*numColumn + j);
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY FOR 'new_matrix'
-This function takes a matrix and a vector, and inserts the vector in the column passed in 'column' argument,
-without overwriting the column present there (it simply takes a step right, along with all the columns after it)
+/* THIS FUNCTION MIGHT ALLOCATE MEMORY FOR 'new_matrix'
+This function takes a matrix, a vector, and a flag.
+If extend_or_overwrite == 'e', then the function inserts the vector in the index 'column', without overwriting,
+and extends the columns after it (i.e. taking them all one step to the right).
+If extend_or_overwrite == 'o', then the function simply insert the vector in index 'column', overwriting that column
 
 Remember the indices start from 0 when passing 'column' */
-double* insertColumn(int numRow, int numColumn, int column, double* matrix, double* columnVector)
+double* insertColumn(int numRow, int numColumn, int column, double* matrix, double* columnVector, char extend_or_overwrite)
 {
-    if (column < 0 || numColumn < column) return NULL; // Out of bounds
-
-    double* new_matrix = (double*) malloc(numRow * (numColumn + 1) * sizeof(double));
-
-    for (int i = 0; i < numRow; i++)
+    if (extend_or_overwrite == 'o')
     {
-        for (int j = 0; j < numColumn + 1; j++)
+        for (int i = 0; i < numRow; i++) *(matrix + i*numColumn + column) = *(columnVector + i);
+        return NULL;
+    }
+    else // In this case extend_or_overwrite == 'e'
+    {
+        double* new_matrix = (double*) malloc(numRow * (numColumn + 1) * sizeof(double));
+
+        for (int i = 0; i < numRow; i++)
         {
-            if (j < column) *(new_matrix + i*(numColumn + 1) + j) = *(matrix + i*numColumn + j);
-            else if (j == column) *(new_matrix + i*(numColumn + 1) + j) = *(columnVector + i);
-            else *(new_matrix + i*(numColumn + 1) + j) = *(matrix + i*numColumn + j - 1);
-            // After inserting the column to the new matrix; the original matrix is one step forward, so we even it out by reducing 1
+            for (int j = 0; j < numColumn + 1; j++)
+            {
+                if (j < column) *(new_matrix + i*(numColumn + 1) + j) = *(matrix + i*numColumn + j);
+                else if (j == column) *(new_matrix + i*(numColumn + 1) + j) = *(columnVector + i);
+                else *(new_matrix + i*(numColumn + 1) + j) = *(matrix + i*numColumn + j - 1);
+                // After inserting the column to the new matrix; the original matrix is one step forward, so we even it out by reducing 1
+            }
         }
+
+        return new_matrix;
+    }
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'vector'
+this function takes a matrix and an 'rc' flag that can hold either 'r' for 'row' or 'c' for 'column'
+If it holds 'r', it copies and returns the row in 'row_or_column' index
+If it holds 'c', it copies and returns the column in 'row_or_column' index
+
+remember that 'row_or_column' starts from 0, not 1 */
+double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, double* matrix, char rc)
+{
+    if (rc != 'r' && rc != 'c') return NULL;
+
+    double* vector = NULL;
+
+    if (rc == 'r')
+    {
+        vector = (double*) malloc(numColumn * sizeof(double));
+        for (int j = 0; j < numColumn; j++) *(vector + j) = *(matrix + row_or_column*numColumn + j);
+    }
+    else // In this case rc == 'c'
+    {
+        vector = (double*) malloc(numRow * sizeof(double));
+        for (int i = 0; i < numRow; i++) *(vector + i) = *(matrix + i*numColumn + row_or_column);
     }
 
-    return new_matrix;
+    return vector;
+}
+
+/* This function takes a 'destMatrix' and its numColumn, truncates its rows and columns according to 'newNumRow' and 'newNumColumn',
+and stores the truncated version in 'srcMatrix' */
+void truncateMatrix(int numColumn, double* destMatrix, int newNumRow, int newNumColumn, double* srcMatrix)
+{
+    for (int i = 0; i < newNumRow; i++)
+    {
+        for (int j = 0; j < newNumColumn; j++) *(srcMatrix + i*newNumColumn + j) = *(destMatrix + i*numColumn + j);
+    }
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'vector'
+This function returns a standard vector, where every element is 0, except in index 'k', where it is 1 */
+double* getStandardVector(int size, int k)
+{
+    if (size <= 0 || k < 0 || size <= k) return NULL;
+
+    double* vector = (double*) malloc(size * sizeof(double));
+    for (int i = 0; i < size; i++) *(vector + i) = (i == k ? 1 : 0);
+
+    return vector;
 }
 
 // Print introduction and get mode from user

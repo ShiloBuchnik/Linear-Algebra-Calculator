@@ -1,5 +1,3 @@
-#include <stdbool.h>
-
 int enableColor(void);
 void swap(double* num1, double* num2);
 int areEqual(double a, double b);
@@ -11,6 +9,9 @@ void displaySolution(int size, double* solution);
 void setIdentityMatrix(int n, double* matrix);
 void matrixCopy(int numRow, int numColumn, double* srcMatrix, double* destMatrix);
 void switchRows(int row1, int row2, int numColumn, double* matrix);
-double* insertColumn(int numRow, int numColumn, int column, double* matrix, double* columnVector);
+double* insertColumn(int numRow, int numColumn, int column, double* matrix, double* columnVector, char extend_or_overwrite);
+void truncateMatrix(int numColumn, double* destMatrix, int newNumRow, int newNumColumn, double* srcMatrix);
+double* getStandardVector(int size, int k);
+double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, double* matrix, char rc);
 int printOpeningAndGetNum(void);
 void printText(int num);

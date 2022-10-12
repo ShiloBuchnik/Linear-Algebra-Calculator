@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "auxFuncsDec.h"
-#include "coreFuncsDec.h"
+#include "auxFuncs.h"
+#include "coreFuncs.h"
 
 int main()
 {
     enableColor();
     int mode = printOpeningAndGetNum();
 
-    printText(mode);
+    //printText(mode);
 
     switch(mode)
     {
@@ -43,6 +43,27 @@ int main()
 
         printf("Your \x1b[96mmatrix\x1b[0m is:\n");
         displayMatrix(numRow, numColumn, inputMatrix);
+
+        double* Q = (double*) malloc(numRow * numRow * sizeof(double));
+        double* R = (double*) malloc(numRow * numColumn * sizeof(double));
+        double* economy_Q = (double*) malloc(numRow * numColumn * sizeof(double));
+        double* economy_R = (double*) malloc(numColumn * numColumn * sizeof(double));
+
+        QRDecomposition(numRow, numColumn, inputMatrix, Q, R, economy_Q, economy_R);
+
+        displayMatrix(numRow, numRow, Q);
+        displayMatrix(numRow, numColumn, R);
+        if (numColumn < numRow)
+        {
+            displayMatrix(numRow, numColumn, economy_Q);
+            displayMatrix(numColumn, numColumn, economy_R);
+        }
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+
+
+
+
 
         GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
 
@@ -127,7 +148,7 @@ int main()
         double* b = (double*) malloc(numRow * sizeof(double));
         doubleVerify(numRow, 1, b, 0);
 
-        double* A_star = insertColumn(numRow, numColumn, numColumn, A, b);
+        double* A_star = insertColumn(numRow, numColumn, numColumn, A, b, 'e');
         printf("The scalars of your system are:\n");
         displayMatrix(numRow, numColumn + 1, A_star);
 

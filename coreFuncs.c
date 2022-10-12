@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include "auxFuncsDec.h"
+#include "auxFuncs.h"
 
 // Getting rid of those annoying negative zeros, and returning row rank *of an echelon form matrix*
 int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
@@ -192,10 +192,11 @@ void GaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, d
     }
 }
 
-static double dotProduct(int column1, int column2, double* vector1, double* vector2)
+// This function multiplies vectors element-wise (dot product)
+static double dotProduct(int size, double* vector1, double* vector2)
 {
     double sum = 0;
-    for (int i = 0; i < column1; i++) sum += *(vector1 + i) * *(vector2 + i*column2);
+    for (int i = 0; i < size; i++) sum += *(vector1 + i) * *(vector2 + i);
 
     return sum;
 }
@@ -212,7 +213,12 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* ma
     {
         for (int j = 0; j < numColumn2; j++)
         {
-            *(product + i*numColumn2 + j) = dotProduct(numColumn1, numColumn2, matrix1 + numColumn1*i, matrix2 + j);
+            double* row_vector = separateRowOrColumn(numRow1, numColumn1, i, matrix1, 'r');
+            double* column_vector = separateRowOrColumn(numColumn1, numColumn2, j, matrix2, 'c');
+            *(product + i*numColumn2 + j) = dotProduct(numColumn1, row_vector, column_vector);
+
+            free(row_vector);
+            free(column_vector);
         }
     }
 
@@ -325,14 +331,26 @@ static double* pseudoInverseCalc(int numRow, int numColumn, double* A)
     return pseudo_inverse;
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY FOR 'result'
-This function subtract two vectors of same size, and returns the result */
-static double* vectorSubtraction(int size, double* vector1, double* vector2)
+/* THIS FUNCTION MIGHT ALLOCATE MEMORY FOR 'result'
+This function takes a flag and subtracts two vectors of same size
+If alloc == 'y', then it allocates the result and returns it
+If alloc == 'n', then it puts the result in 'vector1' */
+static double* vectorSubtraction(int size, double* vector1, double* vector2, char alloc)
 {
-    double* result = (double*) malloc(size * sizeof(double));
-    for (int i = 0; i < size; i++) *(result + i) = *(vector1 + i) - *(vector2 + i);
+    if (alloc != 'y' && alloc != 'n') return NULL;
 
-    return result;
+    if (alloc == 'y')
+    {
+        double* result = (double*) malloc(size * sizeof(double));
+        for (int i = 0; i < size; i++) *(result + i) = *(vector1 + i) - *(vector2 + i);
+
+        return result;
+    }
+    else
+    {
+        for (int i = 0; i < size; i++) *(vector1 + i) -= *(vector2 + i); // In this case alloc == 'n'
+        return NULL;
+    }
 }
 
 /* THIS FUNCTION ALLOCATES MEMORY FOR 'x' AND 'p_x'
@@ -348,13 +366,104 @@ double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b
     *x = matrixMultiplier(numColumn, numRow, 1, pseudo_inverse, b); // This is the minimal point
 
     double* temp = matrixMultiplier(numRow, numColumn, 1, A, *x);
-    double* p_x = vectorSubtraction(numRow, temp, b); // This is the function p(x) (the remainder function) at the minimal point
+    double* p_x = vectorSubtraction(numRow, temp, b, 'y'); // This is the function p(x) (the remainder function) at the minimal point
 
     free(pseudo_inverse);
     free(temp);
 
     return p_x;
 }
+
+static double norm2(int size, double* vector)
+{
+    double norm = 0;
+    for (int i = 0; i < size; i++) norm += pow(*(vector + i), 2);
+    norm = sqrt(norm);
+
+    return norm;
+}
+
+static void multiplyVectorByScalar(int size, double scalar, double* vector)
+{
+    for (int i = 0; i < size; i++) *(vector + i) *= scalar;
+}
+
+/* This function initiate Graham-Schmidt algorithm on given matrix's *columns*, and stores the result in Q's columns
+If the matrix is "tall" (more rows than columns) - the function adds to the input some random vectors until it can output 'numRow' vectors
+(this is done so that Q can be square)
+
+if on the way we run into a vector that is dependent on the ones before it - we replace it with a random vector and carry on */
+static void grahamSchmidtForQR(int numRow, int numColumn, double* matrix, double* Q)
+{
+    /* Instead of taking a random vector when we run into a dependent vector in the process - we take a standard one, to make the numbers prettier
+    this counter tracks which one to take now. First we take (1, 0, 0,...), then (0, 1, 0,...) and so on
+    We are *assured* that we'll finish the process before we've run out of vectors;
+    since it's not possible for *all* of the standard vectors of 'numRow' size to be dependent on a group of size less than 'numRow',
+    since that means that said group is spanning a vector space of higher dimension that the group's size */
+    int dependent_counter = 0;
+    bool get_standard = 0;
+
+    for (int j = 0; j < numRow; j++)
+    {
+        double* w = NULL;
+        if (j < numColumn && !get_standard) w = separateRowOrColumn(numRow, numColumn, j, matrix, 'c');
+        else // We're getting here only if it's a tall matrix, so that we generate more input vectors
+        {
+            w = getStandardVector(numRow, dependent_counter);
+            dependent_counter++;
+            get_standard = 0;
+        }
+
+        for (int k = 0; k < j; k++) // "peeling" the vector
+        {
+            double* u = separateRowOrColumn(numRow, numColumn, k, Q, 'c');
+            double scalar = dotProduct(numRow, u, w);
+
+            multiplyVectorByScalar(numRow, scalar, u);
+            vectorSubtraction(numRow, w, u, 'n');
+
+            free(u);
+        }
+
+        /* We find out if 'w' is 0 through the theorem: 'a matrix is 0 iff its rank is 0'
+        this tells us it's dependent on the vectors before it, so we replace it with a random vector and do the current iteration again */
+        if (!negativeZerosAndFindRank(numRow, 1, w))
+        {
+            j--;
+            get_standard = 1;
+        }
+        else
+        {
+            double norm = norm2(numRow, w);
+            multiplyVectorByScalar(numRow, 1 / norm, w);
+            insertColumn(numRow, numColumn, j, Q, w, 'o');
+        }
+
+        free(w);
+    }
+}
+
+void QRDecomposition(int numRow, int numColumn, double* inputMatrix, double* Q, double* R, double* economy_Q, double* economy_R)
+{
+    grahamSchmidtForQR(numRow, numColumn, inputMatrix, Q); // Getting Q
+    negativeZerosAndFindRank(numRow, numRow, Q);
+    double* Q_T = transpose(numRow, numRow, Q);
+    double* temp = matrixMultiplier(numRow, numRow, numColumn, Q_T, inputMatrix); // Now we got R, since Q^T * A = R
+    matrixCopy(numRow, numColumn, temp, R);
+    negativeZerosAndFindRank(numRow, numColumn, R);
+    free(temp);
+
+    if (numColumn < numRow) // The matrix is "tall", so there is also the economy version
+    {
+        truncateMatrix(numRow, Q, numRow, numColumn, economy_Q); // Getting economy Q
+        negativeZerosAndFindRank(numRow, numColumn, economy_Q);
+        truncateMatrix(numColumn, R, numColumn, numColumn, economy_R); // Getting economy R
+        negativeZerosAndFindRank(numColumn, numColumn, economy_R);
+    }
+
+    free(Q_T);
+}
+
 
 
 // Below are functions that were used in the code, and are no longer needed. Why do I keep them? idk why not

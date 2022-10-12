@@ -7,3 +7,4 @@ double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* ma
 void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U);
 void findDVFromUAndPrint(int numRow, double* U);
 double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b);
+void QRDecomposition(int numRow, int numColumn, double* inputMatrix, double* Q, double* R, double* economy_Q, double* economy_R);
