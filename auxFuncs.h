@@ -10,7 +10,7 @@ void setIdentityMatrix(int n, long double* matrix);
 void matrixCopy(int numRow, int numColumn, long double* srcMatrix, long double* destMatrix);
 void switchRows(int row1, int row2, int numColumn, long double* matrix);
 long double* insertColumn(int numRow, int numColumn, int column, long double* matrix, long double* columnVector, char extend_or_overwrite);
-void truncateMatrix(int numColumn, long double* destMatrix, int newNumRow, int newNumColumn, long double* srcMatrix);
+void truncateMatrix(int numColumn, long double* srcMatrix, int newNumRow, int newNumColumn, long double* destMatrix);
 long double* getStandardVector(int size, int k);
 long double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, long double* matrix, char rc);
 int printOpeningAndGetNum(void);

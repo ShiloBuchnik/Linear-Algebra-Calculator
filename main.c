@@ -51,7 +51,7 @@ int main()
         displayMatrix(numRow, numColumn, inputMatrix);
 
 
-        GaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
+        gaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
 
         long double* inputMatrixCopy = (long double*) malloc(numRow * numColumn * sizeof(long double));
         matrixCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
@@ -161,11 +161,11 @@ int main()
 
         long double* A_copy = (long double*) malloc(numRow * numColumn * sizeof(long double)); // We want 'A' to remain the same, so we copy to find rank
         matrixCopy(numRow, numColumn, A, A_copy);
-        GaussJordanAndFindInverse(numRow, numColumn, A_copy, NULL, NULL, NULL, NULL, NULL);
+        gaussJordanAndFindInverse(numRow, numColumn, A_copy, NULL, NULL, NULL, NULL, NULL);
         int A_rank = negativeZerosAndFindRank(numRow, numColumn, A_copy);
         free(A_copy);
 
-        GaussJordanAndFindInverse(numRow, numColumn + 1, A_star, NULL, NULL, NULL, NULL, NULL); // We don't care about A_star besides its rank
+        gaussJordanAndFindInverse(numRow, numColumn + 1, A_star, NULL, NULL, NULL, NULL, NULL); // We don't care about A_star besides its rank
         int A_star_rank = negativeZerosAndFindRank(numRow, numColumn + 1, A_star);
         free(A_star);
 

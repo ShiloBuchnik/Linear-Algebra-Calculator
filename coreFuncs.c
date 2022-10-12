@@ -59,7 +59,7 @@ long double deterCalc(int n, long double* originMatrix)
         getMinor(n, 0, j, originMatrix, dupMatrix); // Running on 1st row to calculate determinant
         minor = deterCalc(n - 1, dupMatrix); // Calculating the minor
 
-        sum = sum + pow(-1, j) * *(originMatrix + j) * minor; // Determinants got a +-+- sign pattern, hence (-1)^j
+        sum = sum + (long double) pow(-1, j) * *(originMatrix + j) * minor; // Determinants got a +-+- sign pattern, hence (-1)^j
     }
 
     free(dupMatrix);
@@ -84,7 +84,7 @@ void findAndPrintAdjoint(int n, long double* matrix)
         {
             getMinor(n, j, i, matrix, dupArray); // We want the 'ji' minor
 
-            *(adjoint + i*n + j) = deterCalc(n - 1, dupArray) * pow(-1, j + i);
+            *(adjoint + i*n + j) = deterCalc(n - 1, dupArray) * (long double) pow(-1, j + i);
         }
     }
 
@@ -123,7 +123,7 @@ and then go to 'U' and multiply the corresponding *row* by same 'x'. Think for y
 The 'isPermutationIdentity' flag is set to 1 if there's no need for a permutation
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
-void GaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
+void gaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
                                long double* permutation, bool* isPermutationIdentity, long double* L, long double* U)
 {
     /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
@@ -234,7 +234,7 @@ Which makes sense, since in the algorithm we need to first find the permutation 
 void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Permutation, long double* L, long double* U)
 {
     inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
-    GaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, NULL, L, U);
+    gaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, NULL, L, U);
     free(inputMatrix);
 
     // Running on the 'L' matrix
@@ -297,38 +297,13 @@ static bool areColumnsIndependent(int numRow, int numColumn, long double* inputM
 
     if (numColumn <= numRow) // If there's more columns than rows, they're necessarily dependent, and there's no need to find the rank
     {
-        GaussJordanAndFindInverse(numRow, numColumn, inputMatrixCopy, NULL, NULL, NULL, NULL, NULL);
+        gaussJordanAndFindInverse(numRow, numColumn, inputMatrixCopy, NULL, NULL, NULL, NULL, NULL);
         int rank = negativeZerosAndFindRank(numRow, numColumn, inputMatrixCopy);
         if (numColumn == rank) columnsIndependent = 1;
     }
     free(inputMatrixCopy);
 
     return columnsIndependent;
-}
-
-
-/* THIS FUNCTION ALLOCATES MEMORY FOR 'pseudo_inverse'
-This function returns the pseudo inverse of the 'inputMatrix', *if and only if the columns are independent*, and NULL otherwise
-Although a pseudo inverse exists for every matrix, when the columns are independent, there's a simple formula to calculate it;
-and in Least Squares it's all we care about
-
-Remember that 'numRow' and 'numColumn' are switched for the pseudo inverse! */
-static long double* pseudoInverseCalc(int numRow, int numColumn, long double* A)
-{
-    if (!areColumnsIndependent(numRow, numColumn, A)) return NULL;
-
-    long double* A_T = transpose(numRow, numColumn, A); // A^T
-    long double* A_T_A = matrixMultiplier(numColumn, numRow, numColumn, A_T, A); // A^T * A
-    long double* A_T_A_inverse = (long double*) malloc(numColumn * numColumn * sizeof(long double)); // (A^T * A)^-1
-    setIdentityMatrix(numColumn, A_T_A_inverse);
-    GaussJordanAndFindInverse(numColumn, numColumn, A_T_A, A_T_A_inverse, NULL, NULL, NULL, NULL);
-
-    long double* pseudo_inverse = matrixMultiplier(numColumn, numColumn, numRow, A_T_A_inverse, A_T); // (A^T * A)^-1 * A^T
-
-    free(A_T);
-    free(A_T_A);
-    free(A_T_A_inverse);
-    return pseudo_inverse;
 }
 
 /* THIS FUNCTION MIGHT ALLOCATE MEMORY FOR 'result'
@@ -353,32 +328,11 @@ static long double* vectorSubtraction(int size, long double* vector1, long doubl
     }
 }
 
-/* THIS FUNCTION ALLOCATES MEMORY FOR 'x' AND 'p_x'
-This function solves a system of equations through the least squares algorithm
-If there's a *single* minimum point, it stores it in 'x' (note it's a long double pointer), and returns the remainder vector
-(When the minimum point is a true solution, the remainder is 0, obviously)
-If there's infinite solutions, it returns NULL */
-long double* leastSquares(int numRow, int numColumn, long double* A, long double** x, long double* b)
-{
-    long double* pseudo_inverse = pseudoInverseCalc(numRow, numColumn, A);
-    if (!pseudo_inverse) return NULL;
-
-    *x = matrixMultiplier(numColumn, numRow, 1, pseudo_inverse, b); // This is the minimal point
-
-    long double* temp = matrixMultiplier(numRow, numColumn, 1, A, *x);
-    long double* p_x = vectorSubtraction(numRow, temp, b, 'y'); // This is the function p(x) (the remainder function) at the minimal point
-
-    free(pseudo_inverse);
-    free(temp);
-
-    return p_x;
-}
-
 static long double norm2(int size, long double* vector)
 {
     long double norm = 0;
-    for (int i = 0; i < size; i++) norm += pow(*(vector + i), 2);
-    norm = sqrt(norm);
+    for (int i = 0; i < size; i++) norm += (long double) pow(*(vector + i), 2);
+    norm = (long double) sqrt(norm);
 
     return norm;
 }
@@ -457,7 +411,9 @@ void QRDecomposition(int numRow, int numColumn, long double* inputMatrix, long d
     negativeZerosAndFindRank(numRow, numColumn, R);
     free(temp);
 
-    if (numColumn < numRow) // The matrix is "tall", so there is also the economy version
+    // The matrix is "tall", so there is also the economy version.
+    // We also produce it for square matrices, although it's identical to the regular 'Q' and 'R', to fit better with 'leastSquares()'
+    if (numColumn <= numRow)
     {
         truncateMatrix(numRow, Q, numRow, numColumn, economy_Q); // Getting economy Q
         negativeZerosAndFindRank(numRow, numColumn, economy_Q);
@@ -468,28 +424,49 @@ void QRDecomposition(int numRow, int numColumn, long double* inputMatrix, long d
     free(Q_T);
 }
 
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'x' AND 'p_x'
+This function solves a system of equations through the least squares algorithm,
+only instead of solving the problem the "regular" way, we utilize the QR decomposition:
+Ax=b -> QRx=b -> Rx=Q^Tb -> x=R^-1Q^Tb
 
+*We can be sure 'R' has an inverse, since we only call 'QRDecomposition()' only when A's columns are independent;
+and A's columns are independent iff R's columns are independent
 
-// Below are functions that were used in the code, and are no longer needed. Why do I keep them? idk why not
-
-/* I ditched this algorithm for solving systems of equations in favor of least squares, which is more comprehensive and time-efficient
-This function takes the 'A' and 'b' in Ax=b, and stores the 'x', if there is a solution, in 'solution'
-The calculation is done with Cramer's rule
-bool CramersRule(int size, long double* scalarMatrix, long double* solution, long double* bColumn)
+If there's a *single* minimum point, it stores it in 'x' (note it's a long double pointer), and returns the remainder vector
+(When the minimum point is a true solution, the remainder is 0, obviously)
+If there's infinite solutions, it returns NULL */
+long double* leastSquares(int numRow, int numColumn, long double* A, long double** x, long double* b)
 {
-    long double matrixDeter = deterCalc(size, scalarMatrix);
+    if (!areColumnsIndependent(numRow, numColumn, A)) return NULL;
 
-    if (areEqual(matrixDeter, 0.0)) return 0; // No single solution
+    long double* Q = (long double*) malloc(numRow * numRow * sizeof(long double));
+    long double* R = (long double*) malloc(numRow * numColumn * sizeof(long double));
+    long double* economy_Q = (long double*) malloc(numRow * numColumn * sizeof(long double));
+    long double* economy_R = (long double*) malloc(numColumn * numColumn * sizeof(long double));
+    QRDecomposition(numRow, numColumn, A, Q, R, economy_Q, economy_R);
+    free(Q);
+    free(R);
 
-    for (int i = 0; i < size; i++)
-    {
-        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching to calculate determinant ('size' represents the b vector in Ax=b)
+    long double* Q_T = transpose(numRow, numColumn, economy_Q); // Now we have Q^T
+    long double* R_inverse = (long double*) malloc(numColumn * numColumn * sizeof(long double));
+    setIdentityMatrix(numColumn, R_inverse);
+    gaussJordanAndFindInverse(numColumn, numColumn, economy_R, R_inverse, NULL, NULL, NULL, NULL); // Now we have R^-1
 
-        *(solution + i) = deterCalc(size, scalarMatrix) / matrixDeter; // The actual formula
+    long double* Q_T_times_b = matrixMultiplier(numColumn, numRow, 1, Q_T, b);
+    *x = matrixMultiplier(numColumn, numColumn, 1, R_inverse, Q_T_times_b); // This is the minimal point
 
-        switchColumns(size, size, i, scalarMatrix, bColumn); // Switching back
-    }
+    long double* A_times_x = matrixMultiplier(numRow, numColumn, 1, A, *x);
+    long double* p_x = vectorSubtraction(numRow, A_times_x, b, 'y'); // This is the function p(x) (the remainder function) at the minimal point
 
-    return 1; // A single solution found
+    free(economy_R);
+    free(economy_Q);
+    free(Q_T);
+    free(R_inverse);
+    free(Q_T_times_b);
+    free(A_times_x);
+
+    return p_x;
 }
-*/
+
+
+

@@ -237,11 +237,11 @@ long double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, l
 
 /* This function takes a 'destMatrix' and its numColumn, truncates its rows and columns according to 'newNumRow' and 'newNumColumn',
 and stores the truncated version in 'srcMatrix' */
-void truncateMatrix(int numColumn, long double* destMatrix, int newNumRow, int newNumColumn, long double* srcMatrix)
+void truncateMatrix(int numColumn, long double* srcMatrix, int newNumRow, int newNumColumn, long double* destMatrix)
 {
     for (int i = 0; i < newNumRow; i++)
     {
-        for (int j = 0; j < newNumColumn; j++) *(srcMatrix + i*newNumColumn + j) = *(destMatrix + i*numColumn + j);
+        for (int j = 0; j < newNumColumn; j++) *(destMatrix + i*newNumColumn + j) = *(srcMatrix + i*numColumn + j);
     }
 }
 
@@ -313,41 +313,3 @@ void printText(int num)
 }
 
 
-// Below are functions that were used in the code, and are no longer needed. Why do I keep them? idk why not
-
-/*
-This function takes a matrix and separate a column (listed as 'column') from it.
-It returns a pointer to a new matrix without that column, and it stores that column in 'arrColumn'
-long double* separateColumn(int numRow, int numColumn, int column, long double* matrix, long double* arrColumn)
-{
-    if (column < 0 || column >= numColumn) return NULL;
-
-    int i, j, x = 0;
-    long double *scalarMatrix = (long double*) malloc(numRow * (numColumn - 1) * sizeof(long double));
-
-    for (i = 0; i < numRow; i++)
-    {
-        for (j = 0; j < numColumn; j++)
-        {
-            if (j == column) *(arrColumn + i) = *(matrix + i*numColumn + j);
-            else
-            {
-                *(scalarMatrix + x) = *(matrix + i*numColumn + j);
-                x++;
-            }
-        }
-    }
-
-    return scalarMatrix;
-}
-
-
-The function takes a matrix, a column vector and a number 'column'.
-it swaps between the column vector and the column in the matrix whose number is stored in 'column'
-void switchColumns(int numRow, int numColumn, int column, long double* matrix, long double* arrColumn)
-{
-    if (column < 0 || column >= numColumn) return;
-
-    for (int i = 0; i < numRow; i++) swap(matrix + i*numColumn + column, arrColumn + i);
-}
-*/

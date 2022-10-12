@@ -1,7 +1,7 @@
 int negativeZerosAndFindRank(int numRow, int numColumn, long double* matrix);
 long double deterCalc(int n, long double* originMatrix);
 void findAndPrintAdjoint(int n, long double* matrix);
-void GaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
+void gaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
                                long double* permutation, bool* isPermutationIdentity, long double* L, long double* U);
 long double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, long double* matrix1, long double* matrix2);
 void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Permutation, long double* L, long double* U);

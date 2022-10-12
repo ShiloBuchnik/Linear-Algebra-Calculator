@@ -9,4 +9,4 @@ this code showcases formulas and algorithms that were leraned throughout the cou
 3. Matrix multiplication: Multiplying 2 matrices
   
   
-The source code is protected Ⓒ under the 'do what the fuck you want with it' clause
+The source code is protected Ⓒ under the 'DO WHAT THE FUCK YOU WANT WITH IT' clause
