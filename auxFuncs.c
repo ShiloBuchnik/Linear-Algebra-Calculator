@@ -27,14 +27,14 @@ int enableColor(void)
     return 1; // Return 1 on success
 }
 
-void swap(double* num1, double* num2)
+void swap(long double* num1, long double* num2)
 {
-    double temp = *num1;
+    long double temp = *num1;
     *num1 = *num2;
     *num2 = temp;
 }
 
-bool areEqual(double a, double b){
+bool areEqual(long double a, long double b){
     if (fabs(a - b) < 1E-10) return 1;
     else return 0;
 }
@@ -60,11 +60,11 @@ void positiveIntVerify(int* input, int* arr, int arrLen)
 }
 
 /* For getting matrix elements & verifying them. Verification part is a tad spaghetti, I just wanted to verify perfectly */
-void doubleVerify(int numRow, int numColumn, double* matrix, bool print)
+void doubleVerify(int numRow, int numColumn, long double* matrix, bool print)
 {
     int i, j, symbol;
     bool flag = 0;
-    double temp1, temp2;
+    long double temp1, temp2;
 
     for (i = 0; i < numRow; i++)
     {
@@ -72,7 +72,7 @@ void doubleVerify(int numRow, int numColumn, double* matrix, bool print)
 
         for (j = 0; j < numColumn; j++)
         {
-            while (flag == 1 || scanf("%lf", &temp1) != 1)
+            while (flag == 1 || scanf("%Lf", &temp1) != 1)
             {
                 invalidInput();
                 flag = 0;
@@ -82,7 +82,7 @@ void doubleVerify(int numRow, int numColumn, double* matrix, bool print)
 
             if (symbol == '/' || symbol == '\\')
             {
-                if (scanf("%lf", &temp2) != 1)
+                if (scanf("%Lf", &temp2) != 1)
                 {
                     j--;
                     flag = 1;
@@ -118,7 +118,7 @@ void getRowAndColumnNum(int* numRow, int* numColumn)
     printf("\n");
 }
 
-void displayMatrix(int numRow, int numColumn, double* matrix)
+void displayMatrix(int numRow, int numColumn, long double* matrix)
 {
     if (!matrix) return;
 
@@ -126,7 +126,7 @@ void displayMatrix(int numRow, int numColumn, double* matrix)
     {
         for (int j = 0; j < numColumn; j++)
         {
-            printf("%lf  ", *(matrix + i*numColumn + j));
+            printf("%0.10Lf  ", *(matrix + i*numColumn + j));
         }
         printf("\n");
     }
@@ -135,17 +135,17 @@ void displayMatrix(int numRow, int numColumn, double* matrix)
 }
 
 // 'displaySolution' displays vectors in a slightly different way than 'displayMatrix'
-void displaySolution(int size, double* solution) // For displaying the solution
+void displaySolution(int size, long double* solution) // For displaying the solution
 {
     int i;
 
     printf("(");
-    for (i = 0; i < size - 1; i++) printf("%lf, ", solution[i]);
-    printf("%lf)\n\n", solution[i]); // I don't want a comma in the end :>
+    for (i = 0; i < size - 1; i++) printf("%Lf, ", solution[i]);
+    printf("%Lf)\n\n", solution[i]); // I don't want a comma in the end :>
 }
 
 // Setting given square matrix to identity matrix
-void setIdentityMatrix(int n, double* matrix)
+void setIdentityMatrix(int n, long double* matrix)
 {
     if (!matrix) return;
 
@@ -159,7 +159,7 @@ void setIdentityMatrix(int n, double* matrix)
     }
 }
 
-void matrixCopy(int numRow, int numColumn, double* srcMatrix, double* destMatrix)
+void matrixCopy(int numRow, int numColumn, long double* srcMatrix, long double* destMatrix)
 {
     for (int i = 0; i < numRow; i++)
     {
@@ -171,7 +171,7 @@ void matrixCopy(int numRow, int numColumn, double* srcMatrix, double* destMatrix
 }
 
 // This function swaps between two rows in a matrix
-void switchRows(int row1, int row2, int numColumn, double* matrix)
+void switchRows(int row1, int row2, int numColumn, long double* matrix)
 {
     for (int j = 0; j < numColumn; j++) swap(matrix + row1*numColumn + j, matrix + row2*numColumn + j);
 }
@@ -183,7 +183,7 @@ and extends the columns after it (i.e. taking them all one step to the right).
 If extend_or_overwrite == 'o', then the function simply insert the vector in index 'column', overwriting that column
 
 Remember the indices start from 0 when passing 'column' */
-double* insertColumn(int numRow, int numColumn, int column, double* matrix, double* columnVector, char extend_or_overwrite)
+long double* insertColumn(int numRow, int numColumn, int column, long double* matrix, long double* columnVector, char extend_or_overwrite)
 {
     if (extend_or_overwrite == 'o')
     {
@@ -192,7 +192,7 @@ double* insertColumn(int numRow, int numColumn, int column, double* matrix, doub
     }
     else // In this case extend_or_overwrite == 'e'
     {
-        double* new_matrix = (double*) malloc(numRow * (numColumn + 1) * sizeof(double));
+        long double* new_matrix = (long double*) malloc(numRow * (numColumn + 1) * sizeof(long double));
 
         for (int i = 0; i < numRow; i++)
         {
@@ -215,20 +215,20 @@ If it holds 'r', it copies and returns the row in 'row_or_column' index
 If it holds 'c', it copies and returns the column in 'row_or_column' index
 
 remember that 'row_or_column' starts from 0, not 1 */
-double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, double* matrix, char rc)
+long double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, long double* matrix, char rc)
 {
     if (rc != 'r' && rc != 'c') return NULL;
 
-    double* vector = NULL;
+    long double* vector = NULL;
 
     if (rc == 'r')
     {
-        vector = (double*) malloc(numColumn * sizeof(double));
+        vector = (long double*) malloc(numColumn * sizeof(long double));
         for (int j = 0; j < numColumn; j++) *(vector + j) = *(matrix + row_or_column*numColumn + j);
     }
     else // In this case rc == 'c'
     {
-        vector = (double*) malloc(numRow * sizeof(double));
+        vector = (long double*) malloc(numRow * sizeof(long double));
         for (int i = 0; i < numRow; i++) *(vector + i) = *(matrix + i*numColumn + row_or_column);
     }
 
@@ -237,7 +237,7 @@ double* separateRowOrColumn(int numRow, int numColumn, int row_or_column, double
 
 /* This function takes a 'destMatrix' and its numColumn, truncates its rows and columns according to 'newNumRow' and 'newNumColumn',
 and stores the truncated version in 'srcMatrix' */
-void truncateMatrix(int numColumn, double* destMatrix, int newNumRow, int newNumColumn, double* srcMatrix)
+void truncateMatrix(int numColumn, long double* destMatrix, int newNumRow, int newNumColumn, long double* srcMatrix)
 {
     for (int i = 0; i < newNumRow; i++)
     {
@@ -247,11 +247,11 @@ void truncateMatrix(int numColumn, double* destMatrix, int newNumRow, int newNum
 
 /* THIS FUNCTION ALLOCATES MEMORY FOR 'vector'
 This function returns a standard vector, where every element is 0, except in index 'k', where it is 1 */
-double* getStandardVector(int size, int k)
+long double* getStandardVector(int size, int k)
 {
     if (size <= 0 || k < 0 || size <= k) return NULL;
 
-    double* vector = (double*) malloc(size * sizeof(double));
+    long double* vector = (long double*) malloc(size * sizeof(long double));
     for (int i = 0; i < size; i++) *(vector + i) = (i == k ? 1 : 0);
 
     return vector;
@@ -318,12 +318,12 @@ void printText(int num)
 /*
 This function takes a matrix and separate a column (listed as 'column') from it.
 It returns a pointer to a new matrix without that column, and it stores that column in 'arrColumn'
-double* separateColumn(int numRow, int numColumn, int column, double* matrix, double* arrColumn)
+long double* separateColumn(int numRow, int numColumn, int column, long double* matrix, long double* arrColumn)
 {
     if (column < 0 || column >= numColumn) return NULL;
 
     int i, j, x = 0;
-    double *scalarMatrix = (double*) malloc(numRow * (numColumn - 1) * sizeof(double));
+    long double *scalarMatrix = (long double*) malloc(numRow * (numColumn - 1) * sizeof(long double));
 
     for (i = 0; i < numRow; i++)
     {
@@ -344,7 +344,7 @@ double* separateColumn(int numRow, int numColumn, int column, double* matrix, do
 
 The function takes a matrix, a column vector and a number 'column'.
 it swaps between the column vector and the column in the matrix whose number is stored in 'column'
-void switchColumns(int numRow, int numColumn, int column, double* matrix, double* arrColumn)
+void switchColumns(int numRow, int numColumn, int column, long double* matrix, long double* arrColumn)
 {
     if (column < 0 || column >= numColumn) return;
 
