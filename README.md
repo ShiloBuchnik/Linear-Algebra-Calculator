@@ -1,8 +1,8 @@
 ### This is a linear algebra calculator, written solely in C
 
 Made in my spare time, to help me do calculations in Linear Algebra 1;  
-this code showcases formulas and algorithms that were leraned throughout the course. 
-it was later expended to showcase algorithms and decompositions from Numerical Algorithms.
+this code showcases formulas and algorithms that were leraned throughout the course.  
+it was later expended to showcase algorithms and decompositions from Numerical Algorithms.  
   
 **It has 4 modes:**
 1. Single matrix operations: Finding reduced row echelon form, rank, determinant, inverse matrix and adjoint matrix (if they exist)
