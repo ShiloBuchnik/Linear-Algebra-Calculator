@@ -5,7 +5,7 @@
 #include "auxFuncs.h"
 
 // Getting rid of those annoying negative zeros, and returning row rank *of an echelon form matrix*
-int negativeZerosAndFindRank(int numRow, int numColumn, long double* matrix)
+int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix)
 {
     if (!matrix) return 0;
 
@@ -27,7 +27,7 @@ int negativeZerosAndFindRank(int numRow, int numColumn, long double* matrix)
 
 /* This function takes the original matrix, its size, and a point the defines the wanted minor
 It copies said minor into 'dupMatrix' */
-static void getMinor(int n, int rowValue, int columnValue, long double* originMatrix, long double* dupMatrix)
+static void getMinor(int n, int rowValue, int columnValue, double* originMatrix, double* dupMatrix)
 {
     int i, j; // For running on originArray
     int x = 0; // For running on dupArray
@@ -47,19 +47,19 @@ static void getMinor(int n, int rowValue, int columnValue, long double* originMa
 /* Calculating determinant recursively (with minors), input array is a 1D matrix, 'n' is size
 Yes, I know we can utilize the GaussJordanElimination for that, or even compute it with the LU decomposition,
 but isn't recursion fun? */
-long double deterCalc(int n, long double* originMatrix)
+double deterCalc(int n, double* originMatrix)
 {
     if (n == 1) return *(originMatrix); // Base case, Det(a) = a
 
-    long double* dupMatrix = (long double*) malloc( (n - 1) * (n - 1) * sizeof(long double)); // This array represents a minor
-    long double sum = 0, minor;
+    double* dupMatrix = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array represents a minor
+    double sum = 0, minor;
 
     for (int j = 0; j < n; j++)
     {
         getMinor(n, 0, j, originMatrix, dupMatrix); // Running on 1st row to calculate determinant
         minor = deterCalc(n - 1, dupMatrix); // Calculating the minor
 
-        sum = sum + (long double) pow(-1, j) * *(originMatrix + j) * minor; // Determinants got a +-+- sign pattern, hence (-1)^j
+        sum = sum + pow(-1, j) * *(originMatrix + j) * minor; // Determinants got a +-+- sign pattern, hence (-1)^j
     }
 
     free(dupMatrix);
@@ -67,7 +67,7 @@ long double deterCalc(int n, long double* originMatrix)
     return sum;
 }
 
-void findAndPrintAdjoint(int n, long double* matrix)
+void findAndPrintAdjoint(int n, double* matrix)
 {
     if (n == 1)
     {
@@ -75,8 +75,8 @@ void findAndPrintAdjoint(int n, long double* matrix)
       return;
     }
 
-    long double* dupArray = (long double*) malloc( (n - 1) * (n - 1) * sizeof(long double)); // This array stores the minor
-    long double* adjoint = (long double*) malloc(n * n * sizeof(long double));
+    double* dupArray = (double*) malloc( (n - 1) * (n - 1) * sizeof(double)); // This array stores the minor
+    double* adjoint = (double*) malloc(n * n * sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -84,7 +84,7 @@ void findAndPrintAdjoint(int n, long double* matrix)
         {
             getMinor(n, j, i, matrix, dupArray); // We want the 'ji' minor
 
-            *(adjoint + i*n + j) = deterCalc(n - 1, dupArray) * (long double) pow(-1, j + i);
+            *(adjoint + i*n + j) = deterCalc(n - 1, dupArray) * pow(-1, j + i);
         }
     }
 
@@ -97,7 +97,7 @@ void findAndPrintAdjoint(int n, long double* matrix)
 /* This function multiplies a row or column, in a 1D matrix, by a scalar
 We pass a 'start' and 'end' pointers, and a char saying if it's a row ('r') or column ('c').
 Based on that we know what arithmetic needs to be done */
-static void rowOrColumnMultiply(long double* start, long double* end, long double scalar, int numColumn, char row_or_column)
+static void rowOrColumnMultiply(double* start, double* end, double scalar, int numColumn, char row_or_column)
 {
     int interval = (row_or_column == 'r' ? 1 : numColumn);
 
@@ -107,7 +107,6 @@ static void rowOrColumnMultiply(long double* start, long double* end, long doubl
         start += interval;
     }
 }
-
 
 /* 'input' is passed to perform elimination on, and an identity matrix is passed as 'inverse'
 Through elimination, as 'input' gets echelon form, 'inverse' becomes the inverse matrix (if 'input' is invertible)
@@ -123,13 +122,13 @@ and then go to 'U' and multiply the corresponding *row* by same 'x'. Think for y
 The 'isPermutationIdentity' flag is set to 1 if there's no need for a permutation
 
 *Remember that 'matrix[i][j] = matrix + i*numColumn + j' */
-void gaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
-                               long double* permutation, bool* isPermutationIdentity, long double* L, long double* U)
+void gaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
+                               double* permutation, bool* isPermutationIdentity, double* L, double* U)
 {
     /* 'j' iterates over columns, 'i' iterates over rows, 'z' stores the current row in the process (pivot's row)
     'k' (row) and 'p' (column) are used to subtract the entire pivot's row from all the rows below it */
     int i = 0, j = 0, k = 0, p = 0, z = 0;
-    long double pivot, scalar;
+    double pivot, scalar;
 
     for (j = 0; j < numColumn; j++) // For the bottom triangle of the matrix. After this, the matrix is in echelon form
     {
@@ -193,9 +192,9 @@ void gaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatr
 }
 
 // This function multiplies vectors element-wise (dot product)
-static long double dotProduct(int size, long double* vector1, long double* vector2)
+static double dotProduct(int size, double* vector1, double* vector2)
 {
-    long double sum = 0;
+    double sum = 0;
     for (int i = 0; i < size; i++) sum += *(vector1 + i) * *(vector2 + i);
 
     return sum;
@@ -205,16 +204,16 @@ static long double dotProduct(int size, long double* vector1, long double* vecto
 This function multiplies 'matrix1' and 'matrix2' (in this order)
 Note that 'numColumn1 == numRow2', so no need for another variable
 Note that order of matrices passed matters */
-long double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, long double* matrix1, long double* matrix2)
+double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* matrix1, double* matrix2)
 {
-    long double* product = (long double*) malloc(numRow1 * numColumn2 * sizeof(long double));
+    double* product = (double*) malloc(numRow1 * numColumn2 * sizeof(double));
 
     for (int i = 0; i < numRow1; i++)
     {
         for (int j = 0; j < numColumn2; j++)
         {
-            long double* row_vector = separateRowOrColumn(numRow1, numColumn1, i, matrix1, 'r');
-            long double* column_vector = separateRowOrColumn(numColumn1, numColumn2, j, matrix2, 'c');
+            double* row_vector = returnRowOrColumn(numRow1, numColumn1, i, matrix1, 'r');
+            double* column_vector = returnRowOrColumn(numColumn1, numColumn2, j, matrix2, 'c');
             *(product + i*numColumn2 + j) = dotProduct(numColumn1, row_vector, column_vector);
 
             free(row_vector);
@@ -231,7 +230,7 @@ Call to 'GaussJordan' once to get the permutation and the flag telling us if no 
 Now multiply the permutation with the matrix, and pass it to 'GaussJordan' to get 'L' and 'U'; with now permutation and the flag as NULL
 
 Which makes sense, since in the algorithm we need to first find the permutation in elimination, and then eliminate again */
-void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Permutation, long double* L, long double* U)
+void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U)
 {
     inputMatrix = matrixMultiplier(numRow, numRow, numColumn, Permutation, inputMatrix);
     gaussJordanAndFindInverse(numRow, numColumn, inputMatrix, NULL, NULL, NULL, L, U);
@@ -241,7 +240,7 @@ void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long d
     for (int j = 0; j < numRow; j++) // L is square, ergo we run up to 'numRow', not 'numColumn'
     {
         if (areEqual(*(L + j*numRow + j), 1.0)) continue;// Optimization: if the diagonal element is 1, we're moving on to the next one.
-        long double scalar = *(L + j*numRow + j);
+        double scalar = *(L + j*numRow + j);
 
         rowOrColumnMultiply(L + j * numRow + j, L + numRow * numRow + j, 1 / scalar, numRow, 'c');
         rowOrColumnMultiply(U + j * numColumn + j, U + (j + 1) * numColumn, scalar, numColumn, 'r');
@@ -250,15 +249,15 @@ void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long d
 
 /* This function gets the 'D' and 'V' matrices from the 'U' matrix (from 'LU' decomposition). Thus, we get an 'LVD' decomposition
 This decomposition only exists when the matrix is square, so 'U' is square, so no need for 'numColumn' */
-void findDVFromUAndPrint(int numRow, long double* U)
+void findDVFromUAndPrint(int numRow, double* U)
 {
-    long double* D = (long double*) malloc(numRow * numRow * sizeof(long double));
+    double* D = (double*) malloc(numRow * numRow * sizeof(double));
     setIdentityMatrix(numRow, D);
-    long double* V = (long double*) malloc(numRow * numRow * sizeof(long double));
+    double* V = (double*) malloc(numRow * numRow * sizeof(double));
 
     for (int i = 0; i < numRow; i++)
     {
-        long double pivot = *(U + i*numRow + i);
+        double pivot = *(U + i*numRow + i);
         *(D + i*numRow + i) = pivot;
 
         for (int j = 0; j < numRow; j++) *(V + i*numRow + j) = *(U + i*numRow + j) / pivot;
@@ -273,9 +272,9 @@ void findDVFromUAndPrint(int numRow, long double* U)
 /* THIS FUNCTION ALLOCATES MEMORY FOR 'transpose'
 This function returns the transposition of 'inputMatrix'.
 Remember that 'numRow' and 'numColumn' are switched for the transposition! */
-static long double* transpose(int numRow, int numColumn, long double* inputMatrix)
+static double* transpose(int numRow, int numColumn, double* inputMatrix)
 {
-    long double* transpose = (long double*) malloc(numRow * numColumn * sizeof(long double));
+    double* transpose = (double*) malloc(numRow * numColumn * sizeof(double));
 
     // Running on transpose, so 'numRow' and 'numColumn' roles are switched
     for (int i = 0; i < numColumn; i++)
@@ -289,10 +288,10 @@ static long double* transpose(int numRow, int numColumn, long double* inputMatri
     return transpose;
 }
 
-static bool areColumnsIndependent(int numRow, int numColumn, long double* inputMatrix)
+static bool areColumnsIndependent(int numRow, int numColumn, double* inputMatrix)
 {
     bool columnsIndependent = 0;
-    long double* inputMatrixCopy = (long double*) malloc(numRow * numColumn * sizeof(long double));
+    double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
     matrixCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
 
     if (numColumn <= numRow) // If there's more columns than rows, they're necessarily dependent, and there's no need to find the rank
@@ -310,13 +309,13 @@ static bool areColumnsIndependent(int numRow, int numColumn, long double* inputM
 This function takes a flag and subtracts two vectors of same size
 If alloc == 'y', then it allocates the result and returns it
 If alloc == 'n', then it puts the result in 'vector1' */
-static long double* vectorSubtraction(int size, long double* vector1, long double* vector2, char alloc)
+static double* vectorSubtraction(int size, double* vector1, double* vector2, char alloc)
 {
     if (alloc != 'y' && alloc != 'n') return NULL;
 
     if (alloc == 'y')
     {
-        long double* result = (long double*) malloc(size * sizeof(long double));
+        double* result = (double*) malloc(size * sizeof(double));
         for (int i = 0; i < size; i++) *(result + i) = *(vector1 + i) - *(vector2 + i);
 
         return result;
@@ -328,16 +327,16 @@ static long double* vectorSubtraction(int size, long double* vector1, long doubl
     }
 }
 
-static long double norm2(int size, long double* vector)
+static double norm2(int size, double* vector)
 {
-    long double norm = 0;
-    for (int i = 0; i < size; i++) norm += (long double) pow(*(vector + i), 2);
-    norm = (long double) sqrt(norm);
+    double norm = 0;
+    for (int i = 0; i < size; i++) norm += pow(*(vector + i), 2);
+    norm = sqrt(norm);
 
     return norm;
 }
 
-static void multiplyVectorByScalar(int size, long double scalar, long double* vector)
+static void multiplyVectorByScalar(int size, double scalar, double* vector)
 {
     for (int i = 0; i < size; i++) *(vector + i) *= scalar;
 }
@@ -347,7 +346,7 @@ If the matrix is "tall" (more rows than columns) - the function adds to the inpu
 (this is done so that Q can be square)
 
 if on the way we run into a vector that is dependent on the ones before it - we replace it with a random vector and carry on */
-static void grahamSchmidtForQR(int numRow, int numColumn, long double* matrix, long double* Q)
+static void grahamSchmidtForQR(int numRow, int numColumn, double* matrix, double* Q)
 {
     /* Instead of taking a random vector when we run into a dependent vector in the process - we take a standard one, to make the numbers prettier
     this counter tracks which one to take now. First we take (1, 0, 0,...), then (0, 1, 0,...) and so on
@@ -359,8 +358,8 @@ static void grahamSchmidtForQR(int numRow, int numColumn, long double* matrix, l
 
     for (int j = 0; j < numRow; j++)
     {
-        long double* w = NULL;
-        if (j < numColumn && !get_standard) w = separateRowOrColumn(numRow, numColumn, j, matrix, 'c');
+        double* w = NULL;
+        if (j < numColumn && !get_standard) w = returnRowOrColumn(numRow, numColumn, j, matrix, 'c');
         else // We're getting here only if it's a tall matrix, so that we generate more input vectors
         {
             w = getStandardVector(numRow, dependent_counter);
@@ -370,8 +369,8 @@ static void grahamSchmidtForQR(int numRow, int numColumn, long double* matrix, l
 
         for (int k = 0; k < j; k++) // "peeling" the vector
         {
-            long double* u = separateRowOrColumn(numRow, numRow, k, Q, 'c');
-            long double scalar = dotProduct(numRow, u, w);
+            double* u = returnRowOrColumn(numRow, numRow, k, Q, 'c');
+            double scalar = dotProduct(numRow, u, w);
 
             multiplyVectorByScalar(numRow, scalar, u);
             vectorSubtraction(numRow, w, u, 'n');
@@ -388,7 +387,7 @@ static void grahamSchmidtForQR(int numRow, int numColumn, long double* matrix, l
         }
         else
         {
-            long double norm = norm2(numRow, w);
+            double norm = norm2(numRow, w);
             multiplyVectorByScalar(numRow, 1 / norm, w);
             insertColumn(numRow, numRow, j, Q, w, 'o');
         }
@@ -401,12 +400,12 @@ static void grahamSchmidtForQR(int numRow, int numColumn, long double* matrix, l
 If the matrix is "tall", it even finds the economy QR decomposition and puts it in 'economy_Q' and 'economy_R'.
 'economy' version basically means that we stop Graham-Schmidt after we get 'numColumn' vectors, and not try to make 'Q' a square matrix
 Its columns are still orthonormal, the matrix itself is just not orthonormal, since it's not square */
-void QRDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Q, long double* R, long double* economy_Q, long double* economy_R)
+void QRDecomposition(int numRow, int numColumn, double* inputMatrix, double* Q, double* R, double* economy_Q, double* economy_R)
 {
     grahamSchmidtForQR(numRow, numColumn, inputMatrix, Q); // Getting Q
     negativeZerosAndFindRank(numRow, numRow, Q);
-    long double* Q_T = transpose(numRow, numRow, Q);
-    long double* temp = matrixMultiplier(numRow, numRow, numColumn, Q_T, inputMatrix); // Now we got R, since Q^T * A = R
+    double* Q_T = transpose(numRow, numRow, Q);
+    double* temp = matrixMultiplier(numRow, numRow, numColumn, Q_T, inputMatrix); // Now we got R, since Q^T * A = R
     matrixCopy(numRow, numColumn, temp, R);
     negativeZerosAndFindRank(numRow, numColumn, R);
     free(temp);
@@ -432,31 +431,31 @@ Ax=b -> QRx=b -> Rx=Q^Tb -> x=R^-1Q^Tb
 *We can be sure 'R' has an inverse, since we only call 'QRDecomposition()' only when A's columns are independent;
 and A's columns are independent iff R's columns are independent
 
-If there's a *single* minimum point, it stores it in 'x' (note it's a long double pointer), and returns the remainder vector
+If there's a *single* minimum point, it stores it in 'x' (note it's a double pointer), and returns the remainder vector
 (When the minimum point is a true solution, the remainder is 0, obviously)
 If there's infinite solutions, it returns NULL */
-long double* leastSquares(int numRow, int numColumn, long double* A, long double** x, long double* b)
+double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b)
 {
     if (!areColumnsIndependent(numRow, numColumn, A)) return NULL;
 
-    long double* Q = (long double*) malloc(numRow * numRow * sizeof(long double));
-    long double* R = (long double*) malloc(numRow * numColumn * sizeof(long double));
-    long double* economy_Q = (long double*) malloc(numRow * numColumn * sizeof(long double));
-    long double* economy_R = (long double*) malloc(numColumn * numColumn * sizeof(long double));
+    double* Q = (double*) malloc(numRow * numRow * sizeof(double));
+    double* R = (double*) malloc(numRow * numColumn * sizeof(double));
+    double* economy_Q = (double*) malloc(numRow * numColumn * sizeof(double));
+    double* economy_R = (double*) malloc(numColumn * numColumn * sizeof(double));
     QRDecomposition(numRow, numColumn, A, Q, R, economy_Q, economy_R);
     free(Q);
     free(R);
 
-    long double* Q_T = transpose(numRow, numColumn, economy_Q); // Now we have Q^T
-    long double* R_inverse = (long double*) malloc(numColumn * numColumn * sizeof(long double));
+    double* Q_T = transpose(numRow, numColumn, economy_Q); // Now we have Q^T
+    double* R_inverse = (double*) malloc(numColumn * numColumn * sizeof(double));
     setIdentityMatrix(numColumn, R_inverse);
     gaussJordanAndFindInverse(numColumn, numColumn, economy_R, R_inverse, NULL, NULL, NULL, NULL); // Now we have R^-1
 
-    long double* Q_T_times_b = matrixMultiplier(numColumn, numRow, 1, Q_T, b);
+    double* Q_T_times_b = matrixMultiplier(numColumn, numRow, 1, Q_T, b);
     *x = matrixMultiplier(numColumn, numColumn, 1, R_inverse, Q_T_times_b); // This is the minimal point
 
-    long double* A_times_x = matrixMultiplier(numRow, numColumn, 1, A, *x);
-    long double* p_x = vectorSubtraction(numRow, A_times_x, b, 'y'); // This is the function p(x) (the remainder function) at the minimal point
+    double* A_times_x = matrixMultiplier(numRow, numColumn, 1, A, *x);
+    double* p_x = vectorSubtraction(numRow, A_times_x, b, 'y'); // This is the function p(x) (the remainder function) at the minimal point
 
     free(economy_R);
     free(economy_Q);
@@ -470,32 +469,32 @@ long double* leastSquares(int numRow, int numColumn, long double* A, long double
 
 /* This function calculates the Frobenius norm of a matrix.
 i.e. it takes the sum of squares of all entries, and then takes the root of the sum */
-long double frobeniusNorm(int numRow, int numColumn, long double* matrix)
+double frobeniusNorm(int numRow, int numColumn, double* matrix)
 {
-    long double sum = 0;
+    double sum = 0;
 
     for (int i = 0; i < numRow; i++)
     {
-        long double rowSumOfSquares = norm2(numColumn, matrix + i*numColumn);
-        rowSumOfSquares = (long double) pow(rowSumOfSquares, 2); // Getting rid of the square root, since we only want the sum of sqaures
+        double rowSumOfSquares = norm2(numColumn, matrix + i*numColumn);
+        rowSumOfSquares = pow(rowSumOfSquares, 2); // Getting rid of the square root, since we only want the sum of sqaures
         sum += rowSumOfSquares;
     }
-    sum = (long double) sqrt(sum);
+    sum = sqrt(sum);
 
     return sum;
 }
 
 /* THIS FUNCTION ALLOCATES MEMORY FOR 'z'
 linearConvolution is commutative */
-long double* linearConvolution(int size1, long double* x, int size2, long double* h)
+double* linearConvolution(int size1, double* x, int size2, double* h)
 {
     if (size1 <= 0 || size2 <= 0) return NULL;
 
-    long double* z = (long double*) malloc((size1 + size2 - 1) * sizeof(long double));
+    double* z = (double*) malloc((size1 + size2 - 1) * sizeof(double));
 
     for (int k = 0; k <= size1 + size2 - 2; k++) // Running on 'z'
     {
-        long double sum = 0;
+        double sum = 0;
         for (int j = 0; j < size2; j++)
         {
             if (0 <= k - j && k - j < size1) sum += *(x + k - j) * *(h + j);
@@ -506,31 +505,22 @@ long double* linearConvolution(int size1, long double* x, int size2, long double
     return z;
 }
 
-/* The '%' operator in C is actually the remainder operator, not modulo operator
-When both numbers are positive, it acts like the modulo operator, but when of them is negative, it does not.
-For that reason we have this function to replace it */
-inline static int modulo(int n, int N)
-{
-    if (N <= 0) return -1;
-    else return (n % N + N) % N;
-}
-
 /* THIS FUNCTION ALLOCATES MEMORY FOR 'z'
 circularConvolution is commutative */
-long double* circularConvolution(int size1, long double* x, int size2, long double* h)
+double* circularConvolution(int size1, double* x, int size2, double* h)
 {
     if (size1 <= 0 || size2 <= 0) return NULL;
 
-    long double* long_vector = (size1 <= size2) ? h : x;
-    long double* short_vector = (size1 > size2) ? h : x;
+    double* long_vector = (size1 <= size2) ? h : x;
+    double* short_vector = (size1 > size2) ? h : x;
     int min_size = min(size1, size2);
     int max_size = max(size1, size2);
 
-    long double* z = (long double*) malloc(max_size * sizeof(long double));
+    double* z = (double*) malloc(max_size * sizeof(double));
 
     for (int k = 0; k < max_size; k++) // Running on 'z'
     {
-        long double sum = 0;
+        double sum = 0;
         for (int j = 0; j < min_size; j++)
         {
             sum += *(long_vector + modulo(k - j, max_size)) * *(short_vector + j);

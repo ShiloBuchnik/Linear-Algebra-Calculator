@@ -21,31 +21,31 @@ int main()
         getRowAndColumnNum(&numRow, &numColumn);
         bool isSquare = (numRow == numColumn);
 
-        long double* inputMatrix = (long double*) malloc(numRow * numColumn * sizeof(long double));
+        double* inputMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
         doubleVerify(numRow, numColumn, inputMatrix, 1);
 
-        long double* echelonFormMatrix = (long double*) malloc(numRow * numColumn * sizeof(long double));
+        double* echelonFormMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
         matrixCopy(numRow, numColumn, inputMatrix, echelonFormMatrix);
 
 
-        long double* inverseMatrix = NULL;
+        double* inverseMatrix = NULL;
         if (isSquare)
         {
-            inverseMatrix = (long double*) malloc(numRow * numColumn * sizeof(long double));
+            inverseMatrix = (double*) malloc(numRow * numColumn * sizeof(double));
             setIdentityMatrix(numRow, inverseMatrix); // We set it to identity matrix, and in the end of the process get the inverse
         }
 
-        long double* permutationMatrix = (long double*) malloc(numRow * numRow * sizeof(long double));
+        double* permutationMatrix = (double*) malloc(numRow * numRow * sizeof(double));
         setIdentityMatrix(numRow, permutationMatrix); // We set it to identity matrix, and in the end of the process get the permutation
         bool isPermutationIdentity = 1;
-        long double* L = (long double*) malloc(numRow * numRow * sizeof(long double));
+        double* L = (double*) malloc(numRow * numRow * sizeof(double));
         setIdentityMatrix(numRow, L);
-        long double* U = (long double*) malloc(numRow * numColumn * sizeof(long double));
+        double* U = (double*) malloc(numRow * numColumn * sizeof(double));
 
-        long double* Q = (long double*) malloc(numRow * numRow * sizeof(long double));
-        long double* R = (long double*) malloc(numRow * numColumn * sizeof(long double));
-        long double* economy_Q = (long double*) malloc(numRow * numColumn * sizeof(long double));
-        long double* economy_R = (long double*) malloc(numColumn * numColumn * sizeof(long double));
+        double* Q = (double*) malloc(numRow * numRow * sizeof(double));
+        double* R = (double*) malloc(numRow * numColumn * sizeof(double));
+        double* economy_Q = (double*) malloc(numRow * numColumn * sizeof(double));
+        double* economy_R = (double*) malloc(numColumn * numColumn * sizeof(double));
         QRDecomposition(numRow, numColumn, inputMatrix, Q, R, economy_Q, economy_R);
 
         printf("Your \x1b[96mmatrix\x1b[0m is:\n");
@@ -54,7 +54,7 @@ int main()
 
         gaussJordanAndFindInverse(numRow, numColumn, echelonFormMatrix, inverseMatrix, permutationMatrix, &isPermutationIdentity, NULL, NULL);
 
-        long double* inputMatrixCopy = (long double*) malloc(numRow * numColumn * sizeof(long double));
+        double* inputMatrixCopy = (double*) malloc(numRow * numColumn * sizeof(double));
         matrixCopy(numRow, numColumn, inputMatrix, inputMatrixCopy);
         LUDecomposition(numRow, numColumn, inputMatrixCopy, permutationMatrix, L, U);
         free(inputMatrixCopy);
@@ -67,7 +67,7 @@ int main()
 
         printf("The \x1b[93mrank\x1b[0m is: %d\n\n", rank);
 
-        long double deter;
+        double deter;
         if (isSquare)
         {
             deter = deterCalc(numColumn, inputMatrix);
@@ -79,7 +79,7 @@ int main()
             }
             else printf("This matrix is \x1b[94msingular\x1b[0m\n\n");
 
-            printf("The \x1b[91mdeterminant\x1b[0m is: %Lf\n\n", deter);
+            printf("The \x1b[91mdeterminant\x1b[0m is: %lf\n\n", deter);
 
             printf("The \x1b[95madjoint matrix\x1b[0m is:\n\n");
             findAndPrintAdjoint(numColumn, inputMatrix);
@@ -128,7 +128,7 @@ int main()
         }
 
 
-        printf("The \x1b[36mFrobenius norm\x1b[0m is: %0.10Lf\n\n", frobeniusNorm(numRow, numColumn, inputMatrix));
+        printf("The \x1b[36mFrobenius norm\x1b[0m is: %0.10lf\n\n", frobeniusNorm(numRow, numColumn, inputMatrix));
 
         free(inputMatrix);
         free(echelonFormMatrix);
@@ -152,18 +152,18 @@ int main()
         //while (getchar() != '\n');
         printf("\n");
 
-        long double* A = (long double*) malloc(numRow * numColumn * sizeof(long double));
+        double* A = (double*) malloc(numRow * numColumn * sizeof(double));
         doubleVerify(numRow, numColumn, A, 1);
 
         printf("Enter the free coefficients (\x1b[34mb\x1b[0m):\n");
-        long double* b = (long double*) malloc(numRow * sizeof(long double));
+        double* b = (double*) malloc(numRow * sizeof(double));
         doubleVerify(numRow, 1, b, 0);
 
-        long double* A_star = insertColumn(numRow, numColumn, numColumn, A, b, 'e');
+        double* A_star = insertColumn(numRow, numColumn, numColumn, A, b, 'e');
         printf("The scalars of your system are:\n");
         displayMatrix(numRow, numColumn + 1, A_star);
 
-        long double* A_copy = (long double*) malloc(numRow * numColumn * sizeof(long double)); // We want 'A' to remain the same, so we copy to find rank
+        double* A_copy = (double*) malloc(numRow * numColumn * sizeof(double)); // We want 'A' to remain the same, so we copy to find rank
         matrixCopy(numRow, numColumn, A, A_copy);
         gaussJordanAndFindInverse(numRow, numColumn, A_copy, NULL, NULL, NULL, NULL, NULL);
         int A_rank = negativeZerosAndFindRank(numRow, numColumn, A_copy);
@@ -173,8 +173,8 @@ int main()
         int A_star_rank = negativeZerosAndFindRank(numRow, numColumn + 1, A_star);
         free(A_star);
 
-        long double* x = NULL;
-        long double* remainder = leastSquares(numRow, numColumn, A, &x, b);
+        double* x = NULL;
+        double* remainder = leastSquares(numRow, numColumn, A, &x, b);
 
 
         /* If 'leastSquares' returned something (the columns are independent) - no problem.
@@ -236,14 +236,14 @@ int main()
         }
 
         printf("For \x1b[91mmatrix 1\x1b[0m:\n\n");
-        long double* matrix1 = (long double*) malloc(numRow1 * numColumn1 * sizeof(long double));
+        double* matrix1 = (double*) malloc(numRow1 * numColumn1 * sizeof(double));
         doubleVerify(numRow1, numColumn1, matrix1, 1);
 
         printf("For \x1b[94mmatrix 2\x1b[0m:\n\n");
-        long double* matrix2 = (long double*) malloc(numRow2 * numColumn2 * sizeof(long double));
+        double* matrix2 = (double*) malloc(numRow2 * numColumn2 * sizeof(double));
         doubleVerify(numRow2, numColumn2, matrix2, 1);
 
-        long double* product = matrixMultiplier(numRow1, numColumn1, numColumn2, matrix1, matrix2);
+        double* product = matrixMultiplier(numRow1, numColumn1, numColumn2, matrix1, matrix2);
         negativeZerosAndFindRank(numRow1, numColumn2, product);
         printf("The \x1b[92mproduct\x1b[0m is:\n");
         displayMatrix(numRow1, numColumn2, product);
@@ -266,16 +266,16 @@ int main()
 
         printf("For \x1b[91mvector 1\x1b[0m:\n");
         printf("Enter vector entries: ");
-        long double* vector1 = (long double*) malloc(size1 * sizeof(long double));
+        double* vector1 = (double*) malloc(size1 * sizeof(double));
         doubleVerify(1, size1, vector1, 0);
 
         printf("For \x1b[94mvector 2\x1b[0m:\n");
         printf("Enter vector entries: ");
-        long double* vector2 = (long double*) malloc(size2 * sizeof(long double));
+        double* vector2 = (double*) malloc(size2 * sizeof(double));
         doubleVerify(1, size2, vector2, 0);
 
 
-        long double* z = linearConvolution(size1, vector1, size2, vector2);
+        double* z = linearConvolution(size1, vector1, size2, vector2);
         printf("The \x1b[92mlinear\x1b[0m convolution is:\n");
         displaySolution(size1 + size2 - 1, z);
         free(z);

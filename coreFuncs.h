@@ -1,15 +1,15 @@
 #include <stdbool.h>
 
-int negativeZerosAndFindRank(int numRow, int numColumn, long double* matrix);
-long double deterCalc(int n, long double* originMatrix);
-void findAndPrintAdjoint(int n, long double* matrix);
-void gaussJordanAndFindInverse(int numRow, int numColumn, long double* inputMatrix, long double* inverseMatrix,
-                               long double* permutation, bool* isPermutationIdentity, long double* L, long double* U);
-long double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, long double* matrix1, long double* matrix2);
-void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Permutation, long double* L, long double* U);
-void findDVFromUAndPrint(int numRow, long double* U);
-long double* leastSquares(int numRow, int numColumn, long double* A, long double** x, long double* b);
-void QRDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Q, long double* R, long double* economy_Q, long double* economy_R);
-long double frobeniusNorm(int numRow, int numColumn, long double* matrix);
-long double* linearConvolution(int size1, long double* x, int size2, long double* h);
-long double* circularConvolution(int size1, long double* x, int size2, long double* h);
+int negativeZerosAndFindRank(int numRow, int numColumn, double* matrix);
+double deterCalc(int n, double* originMatrix);
+void findAndPrintAdjoint(int n, double* matrix);
+void gaussJordanAndFindInverse(int numRow, int numColumn, double* inputMatrix, double* inverseMatrix,
+                               double* permutation, bool* isPermutationIdentity, double* L, double* U);
+double* matrixMultiplier(int numRow1, int numColumn1, int numColumn2, double* matrix1, double* matrix2);
+void LUDecomposition(int numRow, int numColumn, double* inputMatrix, double* Permutation, double* L, double* U);
+void findDVFromUAndPrint(int numRow, double* U);
+double* leastSquares(int numRow, int numColumn, double* A, double** x, double* b);
+void QRDecomposition(int numRow, int numColumn, double* inputMatrix, double* Q, double* R, double* economy_Q, double* economy_R);
+double frobeniusNorm(int numRow, int numColumn, double* matrix);
+double* linearConvolution(int size1, double* x, int size2, double* h);
+double* circularConvolution(int size1, double* x, int size2, double* h);
