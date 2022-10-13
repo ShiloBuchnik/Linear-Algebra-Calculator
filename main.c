@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "auxFuncs.h"
 #include "coreFuncs.h"
+#include "auxFuncs.h"
 
 int main()
 {
+    //setbuf(stdout, 0);
     enableColor();
     int mode = printOpeningAndGetNum();
 
-    //printText(mode);
+    printText(mode);
 
     switch(mode)
     {
@@ -88,30 +89,30 @@ int main()
             "nor a \x1b[91mdeterminant\x1b[0m, nor an \x1b[95madjoint\x1b[0m\n\n\n");
 
 
-        printf("The LU decomposition is:\n");
+        printf("The \x1b[32mLU\x1b[0m decomposition is:\n");
         printf("L:\n");
         displayMatrix(numRow, numRow, L);
         printf("U:\n");
         displayMatrix(numRow, numColumn, U);
         if (isSquare && !areEqual(deter, 0.0) && isPermutationIdentity)
-            printf("This matrix is regular (square, invertible, and has an LU decomposition without a permutation)\n");
+            printf("This matrix is regular (square, invertible, and has an \x1b[32mLU\x1b[0m decomposition without a permutation)\n\n");
         else
         {
-            printf("With a permutation:\n");
+            printf("With a permutation:\n\n");
             displayMatrix(numRow, numRow, permutationMatrix);
         }
 
         if (isSquare && !areEqual(deter, 0.0))
         {
-            printf("The LDV decomposition is:\n");
+            printf("The \x1b[33mLDV\x1b[0m decomposition is:\n");
             printf("L:\n");
             displayMatrix(numRow, numRow, L);
             findDVFromUAndPrint(numRow, U);
         }
-        else printf("Non-square or singular matrices don't have an LDV decomposition\n\n");
+        else printf("Non-square or singular matrices don't have an \x1b[33mLDV\x1b[0m decomposition\n\n");
 
 
-        printf("The QR decomposition is:\n");
+        printf("The \x1b[31mQR\x1b[0m decomposition is:\n");
         printf("Q:\n");
         displayMatrix(numRow, numRow, Q);
         printf("R:\n");
@@ -119,12 +120,15 @@ int main()
 
         if (numColumn < numRow)
         {
-            printf("This is a \"tall\" matrix, so it has an \"economy\" QR decomposition as well:\n");
+            printf("This is a \"tall\" matrix, so it has an \"economy\" \x1b[31mQR\x1b[0m decomposition as well:\n");
             printf("Economy Q:\n");
             displayMatrix(numRow, numColumn, economy_Q);
             printf("Economy R:\n");
             displayMatrix(numColumn, numColumn, economy_R);
         }
+
+
+        printf("The \x1b[36mFrobenius norm\x1b[0m is: %0.10Lf\n\n", frobeniusNorm(numRow, numColumn, inputMatrix));
 
         free(inputMatrix);
         free(echelonFormMatrix);
@@ -221,7 +225,7 @@ int main()
         printf("For \x1b[94mmatrix 2\x1b[0m:\n\n");
         getRowAndColumnNum(&numRow2, &numColumn2);
 
-        while (numColumn1 != numRow2)
+        while (numColumn1 != numRow2) // Verify the dimensions agree
         {
             printf("Number of columns of \x1b[91mmatrix 1\x1b[0m must be equal to number of rows of \x1b[94mmatrix 2\x1b[0m. Please try again:\n");
 
@@ -247,6 +251,42 @@ int main()
         free(matrix1);
         free(matrix2);
         free(product);
+        break;
+    }
+
+    case 4:
+    {
+        int size1, size2;
+
+        printf("For \x1b[91mvector 1\x1b[0m:\n\n");
+        getVectorSize(&size1);
+
+        printf("For \x1b[94mvector 2\x1b[0m:\n\n");
+        getVectorSize(&size2);
+
+        printf("For \x1b[91mvector 1\x1b[0m:\n");
+        printf("Enter vector entries: ");
+        long double* vector1 = (long double*) malloc(size1 * sizeof(long double));
+        doubleVerify(1, size1, vector1, 0);
+
+        printf("For \x1b[94mvector 2\x1b[0m:\n");
+        printf("Enter vector entries: ");
+        long double* vector2 = (long double*) malloc(size2 * sizeof(long double));
+        doubleVerify(1, size2, vector2, 0);
+
+
+        long double* z = linearConvolution(size1, vector1, size2, vector2);
+        printf("The \x1b[92mlinear\x1b[0m convolution is:\n");
+        displaySolution(size1 + size2 - 1, z);
+        free(z);
+
+        z = circularConvolution(size1, vector1, size2, vector2);
+        printf("The \x1b[32mcircular\x1b[0m convolution is:\n");
+        displaySolution(max(size1, size2), z);
+        free(z);
+
+        free(vector1);
+        free(vector2);
         break;
     }
     }

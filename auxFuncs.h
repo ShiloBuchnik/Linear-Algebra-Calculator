@@ -1,9 +1,15 @@
+#include <stdbool.h>
+
+#define min(a, b) (a <= b) ? a : b
+#define max(a, b) (a > b) ? a : b
+
 int enableColor(void);
 void swap(long double* num1, long double* num2);
 int areEqual(long double a, long double b);
 void positiveIntVerify(int* input, int* arr, int arrLen);
 void doubleVerify(int numRow, int numColumn, long double* matrix, bool print);
 void getRowAndColumnNum(int* numRow, int* numColumn);
+void getVectorSize(int* size);
 void displayMatrix(int numRow, int numColumn, long double* matrix);
 void displaySolution(int size, long double* solution);
 void setIdentityMatrix(int n, long double* matrix);

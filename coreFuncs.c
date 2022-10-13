@@ -468,5 +468,75 @@ long double* leastSquares(int numRow, int numColumn, long double* A, long double
     return p_x;
 }
 
+/* This function calculates the Frobenius norm of a matrix.
+i.e. it takes the sum of squares of all entries, and then takes the root of the sum */
+long double frobeniusNorm(int numRow, int numColumn, long double* matrix)
+{
+    long double sum = 0;
 
+    for (int i = 0; i < numRow; i++)
+    {
+        long double rowSumOfSquares = norm2(numColumn, matrix + i*numColumn);
+        rowSumOfSquares = (long double) pow(rowSumOfSquares, 2); // Getting rid of the square root, since we only want the sum of sqaures
+        sum += rowSumOfSquares;
+    }
+    sum = (long double) sqrt(sum);
 
+    return sum;
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'z'
+linearConvolution is commutative */
+long double* linearConvolution(int size1, long double* x, int size2, long double* h)
+{
+    if (size1 <= 0 || size2 <= 0) return NULL;
+
+    long double* z = (long double*) malloc((size1 + size2 - 1) * sizeof(long double));
+
+    for (int k = 0; k <= size1 + size2 - 2; k++) // Running on 'z'
+    {
+        long double sum = 0;
+        for (int j = 0; j < size2; j++)
+        {
+            if (0 <= k - j && k - j < size1) sum += *(x + k - j) * *(h + j);
+        }
+        *(z + k) = sum;
+    }
+
+    return z;
+}
+
+/* The '%' operator in C is actually the remainder operator, not modulo operator
+When both numbers are positive, it acts like the modulo operator, but when of them is negative, it does not.
+For that reason we have this function to replace it */
+inline static int modulo(int n, int N)
+{
+    if (N <= 0) return -1;
+    else return (n % N + N) % N;
+}
+
+/* THIS FUNCTION ALLOCATES MEMORY FOR 'z'
+circularConvolution is commutative */
+long double* circularConvolution(int size1, long double* x, int size2, long double* h)
+{
+    if (size1 <= 0 || size2 <= 0) return NULL;
+
+    long double* long_vector = (size1 <= size2) ? h : x;
+    long double* short_vector = (size1 > size2) ? h : x;
+    int min_size = min(size1, size2);
+    int max_size = max(size1, size2);
+
+    long double* z = (long double*) malloc(max_size * sizeof(long double));
+
+    for (int k = 0; k < max_size; k++) // Running on 'z'
+    {
+        long double sum = 0;
+        for (int j = 0; j < min_size; j++)
+        {
+            sum += *(long_vector + modulo(k - j, max_size)) * *(short_vector + j);
+        }
+        *(z + k) = sum;
+    }
+
+    return z;
+}

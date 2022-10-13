@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 int negativeZerosAndFindRank(int numRow, int numColumn, long double* matrix);
 long double deterCalc(int n, long double* originMatrix);
 void findAndPrintAdjoint(int n, long double* matrix);
@@ -8,3 +10,6 @@ void LUDecomposition(int numRow, int numColumn, long double* inputMatrix, long d
 void findDVFromUAndPrint(int numRow, long double* U);
 long double* leastSquares(int numRow, int numColumn, long double* A, long double** x, long double* b);
 void QRDecomposition(int numRow, int numColumn, long double* inputMatrix, long double* Q, long double* R, long double* economy_Q, long double* economy_R);
+long double frobeniusNorm(int numRow, int numColumn, long double* matrix);
+long double* linearConvolution(int size1, long double* x, int size2, long double* h);
+long double* circularConvolution(int size1, long double* x, int size2, long double* h);

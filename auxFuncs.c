@@ -39,7 +39,7 @@ bool areEqual(long double a, long double b){
     else return 0;
 }
 
-/* This function takes an input and verify that it's a *positive* int; and if it's in the array 'arr'.
+/* This function takes an input and verify that it's a *positive* int; and that it's in the array 'arr'.
 if we only want to check whether the input is a positive int, we can pass NULL as 'arr', and an arbitrary int as 'arrLen' */
 void positiveIntVerify(int* input, int* arr, int arrLen)
 {
@@ -59,7 +59,9 @@ void positiveIntVerify(int* input, int* arr, int arrLen)
     }
 }
 
-/* For getting matrix elements & verifying them. Verification part is a tad spaghetti, I just wanted to verify perfectly */
+/* For getting matrix elements & verifying them. Verification part is a tad spaghetti, I just wanted to verify perfectly
+We also pass a 'print' flag:
+If it's 1, we ask for the row repeatedly. If it's 0, we don't */
 void doubleVerify(int numRow, int numColumn, long double* matrix, bool print)
 {
     int i, j, symbol;
@@ -106,7 +108,7 @@ void doubleVerify(int numRow, int numColumn, long double* matrix, bool print)
     if (!print) printf("\n");
 }
 
-// This function gets number of rows and number of columns from user
+// This function gets number of rows and number of columns from user, and stores it in 'numRow' and 'numColumn'
 void getRowAndColumnNum(int* numRow, int* numColumn)
 {
     printf("Enter row size: "); // Number of arrays
@@ -114,6 +116,14 @@ void getRowAndColumnNum(int* numRow, int* numColumn)
     while (getchar() != '\n');
     printf("Enter column size: "); // Number of elements in array
     positiveIntVerify (numColumn, NULL, 0);
+    while (getchar() != '\n');
+    printf("\n");
+}
+
+void getVectorSize(int* size)
+{
+    printf("Enter size: ");
+    positiveIntVerify (size, NULL, 0);
     while (getchar() != '\n');
     printf("\n");
 }
@@ -263,13 +273,15 @@ int printOpeningAndGetNum(void)
     printf("Hello! This program offers: \n");
     printf("\x1b[92m1)\x1b[0m Various matrix-related calculations\n");
     printf("\x1b[91m2)\x1b[0m Square system of equations (number of variables = number of equations) calculator\n");
-    printf("\x1b[94m3)\x1b[0m Matrix multiplication calculator\n\n");
-    printf("Please input your choice[\x1b[92m1\x1b[0m/\x1b[91m2\x1b[0m/\x1b[94m3\x1b[0m]: ");
+    printf("\x1b[94m3)\x1b[0m Matrix multiplication calculator\n");
+    printf("\x1b[95m4)\x1b[0m Linear and circular convolution calculator\n\n");
+    printf("Please input your choice[\x1b[92m1\x1b[0m/\x1b[91m2\x1b[0m/\x1b[94m3\x1b[0m/\x1b[95m4\x1b[0m]: ");
 
-    int num, *arr = (int*) malloc(3 * sizeof(int));
-    arr[0] = 1; arr[1] = 2; arr[2] = 3;
+    int num;
+    int* arr = (int*) malloc(4 * sizeof(int));
+    arr[0] = 1; arr[1] = 2; arr[2] = 3; arr[3] = 4;
 
-    positiveIntVerify(&num, arr, 3);
+    positiveIntVerify(&num, arr, 4);
     free(arr);
 
     system("cls");
@@ -287,6 +299,8 @@ void printText(int num)
         printf("In this program you input a \x1b[96mmatrix\x1b[0m\n"
         "The output is the \x1b[92mreduced row echelon form\x1b[0m,\n"
         "as well as the \x1b[93mrank\x1b[0m, the \x1b[94minverse matrix\x1b[0m, the \x1b[91mdeterminant\x1b[0m and the \x1b[95madjoint matrix\x1b[0m\n"
+        "It also provides several decompositions, such as \x1b[32mLU\x1b[0m, \x1b[33mLDV\x1b[0m and \x1b[31mQR\x1b[0m\n"
+        "And at last, it provides the \x1b[36mFrobenius norm\x1b[0m\n"
         "Please input each row as a string of numbers, with spaces between them. For example: 0.3 1/2 5 8 23");
         break;
     case 2:
@@ -300,6 +314,10 @@ void printText(int num)
         printf("In this program you input two matrices: \x1b[91mmatrix 1\x1b[0m and \x1b[94mmatrix 2\x1b[0m\n"
         "The output is the \x1b[92mproduct\x1b[0m: \x1b[91mmatrix 1\x1b[0m * \x1b[94mmatrix 2\x1b[0m");
         break;
+
+    case 4:
+        printf("In this program you input two vectors: \x1b[91mvector 1\x1b[0m and \x1b[94mvector 2\x1b[0m,\n"
+        "and get their \x1b[92mlinear\x1b[0m and \x1b[32mcircular\x1b[0m convolution");
     }
 
     printf("\n\nThings to take heed of:\n"
@@ -311,5 +329,3 @@ void printText(int num)
         "3) This calculator is accurate up to 10 digits after the decimal\n"
         "4) Enjoy ^~^\n\n\n");
 }
-
-
