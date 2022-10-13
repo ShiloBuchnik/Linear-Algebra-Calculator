@@ -254,7 +254,7 @@ int main()
         break;
     }
 
-    case 4:
+    case 4: // Convolution calculator
     {
         int size1, size2;
 
