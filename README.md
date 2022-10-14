@@ -10,7 +10,8 @@ Also, finding LU, LDV and QR decompositions; as well as the Frobenius norm of th
 2. Square system of equations solver: Solving a system of equations, using Least Squares (and utilizing QR decomposition to do it)
 *An older version of this calculator used Cramer's rule.
 3. Matrix multiplication: Multiplying 2 matrices
-4. Convolution: Finding the linear and circular convolution of 2 vectors
+4. Convolution: Finding the linear and circular convolution of 2 vectors  
   
+It utilizes Windows' API to enable ANSI escape sequences (thus, enabling colored printing)
   
 The source code is protected Ⓒ under the 'DO WHAT THE FUCK YOU WANT WITH IT' clause
